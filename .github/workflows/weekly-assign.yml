@@ -1,0 +1,23 @@
+name: Weekly Cleaning Duty Assignment
+
+on:
+  schedule:
+    # Monday 11:00 AM AEST (01:00 UTC) / 11:00 AM AEDT (00:00 UTC)
+    # Using 00:00 UTC = 11:00 AEDT (Sydney summer) / 10:00 AEST (Sydney winter)
+    - cron: "0 0 * * 1"
+
+  # Allow manual trigger from GitHub UI
+  workflow_dispatch:
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run assignment
+        env:
+          FIREBASE_PROJECT: ${{ secrets.FIREBASE_PROJECT }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+        run: node scripts/assign.js

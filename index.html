@@ -432,7 +432,6 @@
     const stateRef = doc(db, "cleaning", "state");
     const configRef = doc(db, "cleaning", "config");
 
-    const NOTIFY_URL = "https://script.google.com/macros/s/AKfycbzGvufRYNKZb82e0Iq8UVWPSTqqW3IOAXbM2ZxmdFD1DE6Sco3xcWLyFoIqRIUmpXM4gQ/exec";
     const DEFAULT_STATE = { remaining: [], cycle: 0, history: [] };
 
     let MEMBERS = [];       // [{name, email}, ...]
@@ -599,30 +598,9 @@
       await spinSlots(pick1, pick2);
       await setDoc(stateRef, state);
 
-      // Send Teams notification
-      notifyTeams({
-        assigned: [pick1, pick2],
-        date: formatDate(new Date()),
-        cycle: state.cycle,
-        round: roundNum,
-      });
-
       document.getElementById("assignBtn").disabled = false;
       render(state);
     };
-
-    async function notifyTeams(data) {
-      try {
-        await fetch(NOTIFY_URL, {
-          method: "POST",
-          mode: "no-cors",
-          headers: { "Content-Type": "text/plain" },
-          body: JSON.stringify(data),
-        });
-      } catch (err) {
-        console.warn("Teams notification failed:", err);
-      }
-    }
 
     window.doReset = async function () {
       if (!confirm("Reset all history?")) return;
