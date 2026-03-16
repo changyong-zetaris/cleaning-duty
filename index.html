@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cleaning Duty Roulette</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #0a0a1a;
+      color: #e0e0e0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 30px 16px;
+      overflow-x: hidden;
+    }
+
+    .container { max-width: 540px; width: 100%; }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .header .date {
+      font-size: 0.85rem;
+      color: #888;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+
+    .header h1 {
+      font-size: 2rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #f72585, #7209b7, #3a0ca3, #4cc9f0);
+      background-size: 300% 300%;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: gradientShift 4s ease infinite;
+    }
+
+    .header .subtitle {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    /* Cycle info */
+    .cycle-info {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #888;
+      margin-bottom: 20px;
+    }
+    .cycle-info strong { color: #f72585; }
+
+    /* Slot machine */
+    .slot-machine {
+      background: linear-gradient(145deg, #1a1a2e, #16213e);
+      border: 2px solid #2a2a4a;
+      border-radius: 20px;
+      padding: 28px 20px;
+      margin-bottom: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slot-machine::before {
+      content: '';
+      position: absolute;
+      top: -2px; left: -2px; right: -2px; bottom: -2px;
+      border-radius: 20px;
+      background: linear-gradient(45deg, #f72585, #7209b7, #3a0ca3, #4cc9f0, #f72585);
+      background-size: 400% 400%;
+      z-index: -1;
+      animation: borderGlow 6s ease infinite;
+      opacity: 0.5;
+    }
+
+    @keyframes borderGlow {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+
+    .slot-windows {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 24px;
+    }
+
+    .slot-window {
+      width: 160px;
+      height: 70px;
+      background: #0a0a1a;
+      border-radius: 12px;
+      border: 2px solid #333;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slot-window .label {
+      position: absolute;
+      top: 4px;
+      left: 8px;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #555;
+    }
+
+    .slot-window .name {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: #4cc9f0;
+      transition: all 0.3s;
+    }
+
+    .slot-window .name.spinning {
+      animation: slotSpin 0.1s linear infinite;
+      color: #666;
+      filter: blur(2px);
+    }
+
+    .slot-window .name.winner {
+      color: #f72585;
+      text-shadow: 0 0 20px rgba(247, 37, 133, 0.5);
+      animation: winPulse 0.5s ease;
+    }
+
+    @keyframes slotSpin {
+      0% { transform: translateY(-20px); opacity: 0.3; }
+      50% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(20px); opacity: 0.3; }
+    }
+
+    @keyframes winPulse {
+      0% { transform: scale(1.4); }
+      50% { transform: scale(0.9); }
+      100% { transform: scale(1); }
+    }
+
+    /* Lever / Button */
+    .pull-btn {
+      display: block;
+      width: 100%;
+      padding: 16px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      background: linear-gradient(135deg, #f72585, #b5179e);
+      border: none;
+      border-radius: 14px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 20px rgba(247, 37, 133, 0.3);
+    }
+
+    .pull-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(247, 37, 133, 0.5);
+    }
+
+    .pull-btn:active { transform: translateY(1px); }
+
+    .pull-btn:disabled {
+      background: #333;
+      box-shadow: none;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Members grid */
+    .members-section {
+      margin-bottom: 20px;
+    }
+
+    .members-section .section-title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #555;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+
+    .members {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+
+    .member {
+      text-align: center;
+      padding: 10px 4px;
+      border-radius: 10px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      transition: all 0.4s ease;
+      border: 1px solid transparent;
+    }
+
+    .member.available {
+      background: #1a1a2e;
+      color: #aaa;
+      border-color: #2a2a4a;
+    }
+
+    .member.selected {
+      background: linear-gradient(135deg, #f72585, #b5179e);
+      color: #fff;
+      border-color: #f72585;
+      transform: scale(1.08);
+      box-shadow: 0 0 16px rgba(247, 37, 133, 0.4);
+      animation: selectedGlow 1.5s ease infinite;
+    }
+
+    @keyframes selectedGlow {
+      0%, 100% { box-shadow: 0 0 16px rgba(247, 37, 133, 0.4); }
+      50% { box-shadow: 0 0 24px rgba(247, 37, 133, 0.7); }
+    }
+
+    .member.done {
+      background: #111;
+      color: #444;
+      border-color: #1a1a1a;
+      text-decoration: line-through;
+    }
+
+    /* Cards */
+    .card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 14px;
+    }
+
+    .card h2 {
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 9px 0;
+      border-bottom: 1px solid #1e1e3a;
+      font-size: 0.82rem;
+    }
+
+    .history-item:last-child { border-bottom: none; }
+
+    .history-item .date-round {
+      color: #555;
+      font-size: 0.72rem;
+      min-width: 110px;
+    }
+
+    .history-item .names {
+      font-weight: 600;
+      color: #ccc;
+    }
+
+    .history-item.current .names {
+      color: #f72585;
+    }
+
+    .empty {
+      text-align: center;
+      color: #444;
+      padding: 16px;
+      font-size: 0.85rem;
+    }
+
+    /* Toggle */
+    .toggle-header {
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .toggle-header .arrow {
+      display: inline-block;
+      transition: transform 0.2s;
+      font-size: 0.6rem;
+      color: #555;
+    }
+    .toggle-header .arrow.open { transform: rotate(90deg); }
+
+    .cycle-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #7209b7;
+      padding: 10px 0 4px;
+      border-bottom: 1px solid #7209b720;
+      margin-top: 6px;
+    }
+    .cycle-label:first-child { margin-top: 0; }
+
+    /* Reset */
+    .reset-btn {
+      display: block;
+      margin: 8px auto 0;
+      padding: 8px 20px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.7rem;
+      color: #555;
+      background: none;
+      border: 1px solid #2a2a4a;
+      border-radius: 8px;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .reset-btn:hover { color: #f72585; border-color: #f72585; }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      color: #555;
+      padding: 60px 20px;
+      font-size: 0.95rem;
+    }
+
+    /* Confetti */
+    .confetti-piece {
+      position: fixed;
+      width: 8px;
+      height: 8px;
+      border-radius: 2px;
+      pointer-events: none;
+      z-index: 999;
+      animation: confettiFall 1.5s ease-out forwards;
+    }
+
+    @keyframes confettiFall {
+      0% { transform: translateY(0) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="date" id="todayDate"></div>
+      <h1>Cleaning Roulette</h1>
+      <div class="subtitle">Who's the lucky winner today?</div>
+    </div>
+
+    <div id="app"><div class="loading">Connecting to database...</div></div>
+  </div>
+
+  <template id="mainTemplate">
+    <div class="cycle-info" id="cycleInfo"></div>
+
+    <div class="slot-machine">
+      <div class="slot-windows">
+        <div class="slot-window">
+          <span class="label">Victim #1</span>
+          <span class="name" id="slot1">?</span>
+        </div>
+        <div class="slot-window">
+          <span class="label">Victim #2</span>
+          <span class="name" id="slot2">?</span>
+        </div>
+      </div>
+      <button class="pull-btn" id="assignBtn" onclick="doAssign()">Pull the Lever</button>
+    </div>
+
+    <div class="members-section">
+      <div class="section-title">Players</div>
+      <div class="members" id="membersGrid"></div>
+    </div>
+
+    <div class="card">
+      <h2>Current Cycle</h2>
+      <div id="cycleHistory"><div class="empty">No assignments yet</div></div>
+    </div>
+
+    <div class="card">
+      <h2 class="toggle-header" onclick="toggleFull()">
+        <span class="arrow" id="arrow">&#9654;</span> Full History
+      </h2>
+      <div id="fullHistory" style="display:none;"></div>
+    </div>
+
+    <button class="reset-btn" onclick="doReset()">Reset All</button>
+  </template>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
+    import {
+      getFirestore, doc, getDoc, setDoc, onSnapshot
+    } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAi8ajdoo5U3sQiC5g2RaX1ajnjVg_kGyI",
+      authDomain: "cleaning-duty-e268f.firebaseapp.com",
+      projectId: "cleaning-duty-e268f",
+      storageBucket: "cleaning-duty-e268f.firebasestorage.app",
+      messagingSenderId: "748276836883",
+      appId: "1:748276836883:web:a4d31fb124ed1f2816ede6"
+    };
+
+    const fbApp = initializeApp(firebaseConfig);
+    const db = getFirestore(fbApp);
+    const stateRef = doc(db, "cleaning", "state");
+    const configRef = doc(db, "cleaning", "config");
+
+    const DEFAULT_STATE = { remaining: [], cycle: 0, history: [] };
+
+    let MEMBERS = [];
+    let currentState = { ...DEFAULT_STATE };
+    let fullOpen = false;
+    let initialized = false;
+    let isSpinning = false;
+
+    // Show today's date
+    function showDate() {
+      const el = document.getElementById("todayDate");
+      if (el) el.textContent = formatDate(new Date());
+    }
+
+    function formatDate(d) {
+      if (typeof d === 'string') d = new Date(d);
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    function toDateString(d) {
+      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    }
+
+    // --- Load members from Firestore, then start ---
+    async function init() {
+      try {
+        const configSnap = await getDoc(configRef);
+        if (!configSnap.exists() || !configSnap.data().members) {
+          document.getElementById("app").innerHTML =
+            '<div class="loading">Members not configured. Add a "config" document in Firestore.</div>';
+          return;
+        }
+        MEMBERS = configSnap.data().members;
+        startListening();
+      } catch (error) {
+        console.error("Failed to load config:", error);
+        document.getElementById("app").innerHTML =
+          '<div class="loading">Failed to connect. Check console for details.</div>';
+      }
+    }
+
+    function startListening() {
+      onSnapshot(stateRef, (snapshot) => {
+        if (!initialized) {
+          document.getElementById("app").innerHTML =
+            document.getElementById("mainTemplate").innerHTML;
+          initialized = true;
+          showDate();
+        }
+
+        if (snapshot.exists()) {
+          currentState = snapshot.data();
+        } else {
+          currentState = { ...DEFAULT_STATE };
+        }
+
+        if (!isSpinning) render(currentState);
+      }, (error) => {
+        console.error("Firestore error:", error);
+        document.getElementById("app").innerHTML =
+          '<div class="loading">Failed to connect. Check console for details.</div>';
+      });
+    }
+
+    init();
+
+    // --- Slot machine animation ---
+    function spinSlots(pick1, pick2) {
+      return new Promise(resolve => {
+        isSpinning = true;
+        const slot1 = document.getElementById("slot1");
+        const slot2 = document.getElementById("slot2");
+
+        slot1.className = "name spinning";
+        slot2.className = "name spinning";
+
+        let spinCount = 0;
+        const spinInterval = setInterval(() => {
+          slot1.textContent = MEMBERS[Math.floor(Math.random() * MEMBERS.length)];
+          slot2.textContent = MEMBERS[Math.floor(Math.random() * MEMBERS.length)];
+          spinCount++;
+
+          if (spinCount > 20) {
+            clearInterval(spinInterval);
+
+            // Slow down slot 1
+            let slow1 = 0;
+            const slowInterval1 = setInterval(() => {
+              slot1.textContent = MEMBERS[Math.floor(Math.random() * MEMBERS.length)];
+              slow1++;
+              if (slow1 > 5) {
+                clearInterval(slowInterval1);
+                slot1.textContent = pick1;
+                slot1.className = "name winner";
+
+                // Slow down slot 2
+                let slow2 = 0;
+                const slowInterval2 = setInterval(() => {
+                  slot2.textContent = MEMBERS[Math.floor(Math.random() * MEMBERS.length)];
+                  slow2++;
+                  if (slow2 > 5) {
+                    clearInterval(slowInterval2);
+                    slot2.textContent = pick2;
+                    slot2.className = "name winner";
+                    launchConfetti();
+                    isSpinning = false;
+                    resolve();
+                  }
+                }, 150);
+              }
+            }, 150);
+          }
+        }, 60);
+      });
+    }
+
+    function launchConfetti() {
+      const colors = ['#f72585', '#7209b7', '#3a0ca3', '#4361ee', '#4cc9f0', '#ffd60a'];
+      for (let i = 0; i < 40; i++) {
+        const piece = document.createElement('div');
+        piece.className = 'confetti-piece';
+        piece.style.left = Math.random() * 100 + 'vw';
+        piece.style.top = '-10px';
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDelay = Math.random() * 0.5 + 's';
+        piece.style.animationDuration = (1 + Math.random()) + 's';
+        document.body.appendChild(piece);
+        setTimeout(() => piece.remove(), 2500);
+      }
+    }
+
+    // --- Actions ---
+    window.doAssign = async function () {
+      if (isSpinning) return;
+      const state = { ...currentState, remaining: [...currentState.remaining], history: [...currentState.history] };
+
+      if (state.remaining.length < 2) {
+        state.cycle++;
+        state.remaining = [...MEMBERS];
+        shuffle(state.remaining);
+      }
+
+      const idx1 = Math.floor(Math.random() * state.remaining.length);
+      const pick1 = state.remaining.splice(idx1, 1)[0];
+      const idx2 = Math.floor(Math.random() * state.remaining.length);
+      const pick2 = state.remaining.splice(idx2, 1)[0];
+
+      const roundNum = (MEMBERS.length - state.remaining.length) / 2;
+
+      state.history.push({
+        cycle: state.cycle,
+        round: roundNum,
+        assigned: [pick1, pick2],
+        date: toDateString(new Date()),
+      });
+
+      document.getElementById("assignBtn").disabled = true;
+
+      await spinSlots(pick1, pick2);
+      await setDoc(stateRef, state);
+
+      document.getElementById("assignBtn").disabled = false;
+      render(state);
+    };
+
+    window.doReset = async function () {
+      if (!confirm("Reset all history?")) return;
+      await setDoc(stateRef, { ...DEFAULT_STATE });
+    };
+
+    window.toggleFull = function () {
+      fullOpen = !fullOpen;
+      document.getElementById("fullHistory").style.display = fullOpen ? "block" : "none";
+      document.getElementById("arrow").className = "arrow" + (fullOpen ? " open" : "");
+      if (fullOpen) renderFullHistory(currentState);
+    };
+
+    // --- Rendering ---
+    function render(state) {
+      const current = state.history.length > 0 ? state.history[state.history.length - 1] : null;
+      const currentAssigned = current ? current.assigned : [];
+      const remainingSet = new Set(state.remaining);
+
+      // Slot windows
+      const slot1 = document.getElementById("slot1");
+      const slot2 = document.getElementById("slot2");
+      if (current && !isSpinning) {
+        slot1.textContent = current.assigned[0];
+        slot1.className = "name winner";
+        slot2.textContent = current.assigned[1];
+        slot2.className = "name winner";
+      } else if (!current) {
+        slot1.textContent = "?";
+        slot1.className = "name";
+        slot2.textContent = "?";
+        slot2.className = "name";
+      }
+
+      // Members grid
+      document.getElementById("membersGrid").innerHTML = MEMBERS.map(name => {
+        let cls = "member ";
+        if (currentAssigned.includes(name)) cls += "selected";
+        else if (remainingSet.has(name)) cls += "available";
+        else if (state.cycle > 0) cls += "done";
+        else cls += "available";
+        return `<div class="${cls}">${name}</div>`;
+      }).join("");
+
+      // Cycle info
+      const info = document.getElementById("cycleInfo");
+      if (state.cycle === 0) {
+        info.innerHTML = "Pull the lever to find today's lucky cleaners!";
+      } else {
+        const left = state.remaining.length;
+        info.innerHTML = `Cycle <strong>#${state.cycle}</strong> &mdash; ${left === 0 ? "Cycle complete! Next pull starts a new cycle." : left + " players remaining"}`;
+      }
+
+      // Current cycle history
+      const cycleItems = state.history.filter(h => h.cycle === state.cycle);
+      const cycleEl = document.getElementById("cycleHistory");
+      if (cycleItems.length === 0) {
+        cycleEl.innerHTML = '<div class="empty">No assignments yet</div>';
+      } else {
+        cycleEl.innerHTML = cycleItems.map((h, i) => {
+          const isCurrent = i === cycleItems.length - 1;
+          const dateStr = h.date ? formatDate(h.date + "T00:00:00") : "";
+          return `<div class="history-item${isCurrent ? " current" : ""}">
+            <span class="date-round">${dateStr} &middot; R${h.round}</span>
+            <span class="names">${h.assigned[0]} & ${h.assigned[1]}</span>
+          </div>`;
+        }).join("");
+      }
+
+      if (fullOpen) renderFullHistory(state);
+    }
+
+    function renderFullHistory(state) {
+      const container = document.getElementById("fullHistory");
+      if (state.history.length === 0) {
+        container.innerHTML = '<div class="empty">No history yet</div>';
+        return;
+      }
+
+      let html = "";
+      let cur = null;
+      state.history.forEach(h => {
+        if (h.cycle !== cur) {
+          cur = h.cycle;
+          html += `<div class="cycle-label">Cycle #${cur}</div>`;
+        }
+        const dateStr = h.date ? formatDate(h.date + "T00:00:00") : "";
+        html += `<div class="history-item">
+          <span class="date-round">${dateStr} &middot; R${h.round}</span>
+          <span class="names">${h.assigned[0]} & ${h.assigned[1]}</span>
+        </div>`;
+      });
+      container.innerHTML = html;
+    }
+
+    // --- Utility ---
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+    }
+  </script>
+</body>
+</html>
