@@ -432,9 +432,11 @@
     const stateRef = doc(db, "cleaning", "state");
     const configRef = doc(db, "cleaning", "config");
 
+    const NOTIFY_URL = "https://script.google.com/macros/s/AKfycbzGvufRYNKZb82e0Iq8UVWPSTqqW3IOAXbM2ZxmdFD1DE6Sco3xcWLyFoIqRIUmpXM4gQ/exec";
     const DEFAULT_STATE = { remaining: [], cycle: 0, history: [] };
 
-    let MEMBERS = [];
+    let MEMBERS = [];       // [{name, email}, ...]
+    let MEMBER_NAMES = [];  // ["Brian", ...]
     let currentState = { ...DEFAULT_STATE };
     let fullOpen = false;
     let initialized = false;
@@ -467,6 +469,7 @@
           return;
         }
         MEMBERS = configSnap.data().members;
+        MEMBER_NAMES = MEMBERS.map(m => m.name);
         startListening();
       } catch (error) {
         console.error("Failed to load config:", error);
@@ -512,8 +515,8 @@
 
         let spinCount = 0;
         const spinInterval = setInterval(() => {
-          slot1.textContent = MEMBERS[Math.floor(Math.random() * MEMBERS.length)];
-          slot2.textContent = MEMBERS[Math.floor(Math.random() * MEMBERS.length)];
+          slot1.textContent = MEMBER_NAMES[Math.floor(Math.random() * MEMBER_NAMES.length)];
+          slot2.textContent = MEMBER_NAMES[Math.floor(Math.random() * MEMBER_NAMES.length)];
           spinCount++;
 
           if (spinCount > 20) {
@@ -522,7 +525,7 @@
             // Slow down slot 1
             let slow1 = 0;
             const slowInterval1 = setInterval(() => {
-              slot1.textContent = MEMBERS[Math.floor(Math.random() * MEMBERS.length)];
+              slot1.textContent = MEMBER_NAMES[Math.floor(Math.random() * MEMBER_NAMES.length)];
               slow1++;
               if (slow1 > 5) {
                 clearInterval(slowInterval1);
@@ -532,7 +535,7 @@
                 // Slow down slot 2
                 let slow2 = 0;
                 const slowInterval2 = setInterval(() => {
-                  slot2.textContent = MEMBERS[Math.floor(Math.random() * MEMBERS.length)];
+                  slot2.textContent = MEMBER_NAMES[Math.floor(Math.random() * MEMBER_NAMES.length)];
                   slow2++;
                   if (slow2 > 5) {
                     clearInterval(slowInterval2);
@@ -572,7 +575,7 @@
 
       if (state.remaining.length < 2) {
         state.cycle++;
-        state.remaining = [...MEMBERS];
+        state.remaining = [...MEMBER_NAMES];
         shuffle(state.remaining);
       }
 
@@ -581,13 +584,14 @@
       const idx2 = Math.floor(Math.random() * state.remaining.length);
       const pick2 = state.remaining.splice(idx2, 1)[0];
 
-      const roundNum = (MEMBERS.length - state.remaining.length) / 2;
+      const roundNum = (MEMBER_NAMES.length - state.remaining.length) / 2;
+      const dateStr = toDateString(new Date());
 
       state.history.push({
         cycle: state.cycle,
         round: roundNum,
         assigned: [pick1, pick2],
-        date: toDateString(new Date()),
+        date: dateStr,
       });
 
       document.getElementById("assignBtn").disabled = true;
@@ -595,9 +599,30 @@
       await spinSlots(pick1, pick2);
       await setDoc(stateRef, state);
 
+      // Send Teams notification
+      notifyTeams({
+        assigned: [pick1, pick2],
+        date: formatDate(new Date()),
+        cycle: state.cycle,
+        round: roundNum,
+      });
+
       document.getElementById("assignBtn").disabled = false;
       render(state);
     };
+
+    async function notifyTeams(data) {
+      try {
+        await fetch(NOTIFY_URL, {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "text/plain" },
+          body: JSON.stringify(data),
+        });
+      } catch (err) {
+        console.warn("Teams notification failed:", err);
+      }
+    }
 
     window.doReset = async function () {
       if (!confirm("Reset all history?")) return;
@@ -633,7 +658,7 @@
       }
 
       // Members grid
-      document.getElementById("membersGrid").innerHTML = MEMBERS.map(name => {
+      document.getElementById("membersGrid").innerHTML = MEMBER_NAMES.map(name => {
         let cls = "member ";
         if (currentAssigned.includes(name)) cls += "selected";
         else if (remainingSet.has(name)) cls += "available";
@@ -648,7 +673,7 @@
         info.innerHTML = "Pull the lever to find today's lucky cleaners!";
       } else {
         const left = state.remaining.length;
-        info.innerHTML = `Cycle <strong>#${state.cycle}</strong> &mdash; ${left === 0 ? "Cycle complete! Next pull starts a new cycle." : left + " players remaining"}`;
+        info.innerHTML = `Cycle <strong>#${state.cycle}</strong> &mdash; ${left === 0 ? "Cycle complete! Next pull starts a new cycle." : (left / 2) + " rounds remaining"}`;
       }
 
       // Current cycle history
