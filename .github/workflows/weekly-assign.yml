@@ -2,9 +2,8 @@ name: Weekly Cleaning Duty Assignment
 
 on:
   schedule:
-    # Monday 11:00 AM AEST (01:00 UTC) / 11:00 AM AEDT (00:00 UTC)
-    # Using 00:00 UTC = 11:00 AEDT (Sydney summer) / 10:00 AEST (Sydney winter)
-    - cron: "0 0 * * 1"
+    # Monday 10:00 AM AEDT (23:00 UTC Sun) / 9:00 AM AEST (23:00 UTC Sun)
+    - cron: "0 23 * * 0"
 
   # Allow manual trigger from GitHub UI
   workflow_dispatch:
