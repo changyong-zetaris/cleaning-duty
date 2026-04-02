@@ -138,9 +138,44 @@ async function sendTeamsNotification(pick1, pick2, cycle, round, dateStr) {
   }
 }
 
+// --- Melbourne public holiday check ---
+
+async function isMelbournePublicHoliday() {
+  // Get today's date in Melbourne timezone
+  const melbourneDate = new Date().toLocaleDateString("en-CA", { timeZone: "Australia/Melbourne" });
+  const year = melbourneDate.split("-")[0];
+
+  const url = `https://date.nager.at/api/v3/PublicHolidays/${year}/AU`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    console.warn("Holiday API unavailable, proceeding with assignment");
+    return false;
+  }
+
+  const holidays = await res.json();
+  // Include national holidays (counties === null) and Victoria holidays
+  const isHoliday = holidays.some(
+    (h) => h.date === melbourneDate && (h.counties === null || h.counties.includes("AU-VIC"))
+  );
+
+  if (isHoliday) {
+    const match = holidays.find(
+      (h) => h.date === melbourneDate && (h.counties === null || h.counties.includes("AU-VIC"))
+    );
+    console.log(`Skipping: today (${melbourneDate}) is a public holiday — ${match.localName}`);
+  }
+
+  return isHoliday;
+}
+
 // --- Main ---
 
 async function main() {
+  // Skip assignment on Melbourne public holidays
+  if (await isMelbournePublicHoliday()) {
+    return;
+  }
+
   // Read config (members list)
   const config = await readDoc("cleaning/config");
   if (!config || !config.members) {
@@ -169,7 +204,7 @@ async function main() {
   const pick2 = state.remaining.splice(idx2, 1)[0];
 
   const roundNum = (memberNames.length - state.remaining.length) / 2;
-  const today = new Date().toISOString().split("T")[0];
+  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Australia/Melbourne" });
 
   if (!state.history) state.history = [];
   state.history.push({
