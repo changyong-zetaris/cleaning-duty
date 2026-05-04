@@ -102,15 +102,18 @@
 
     .slot-window {
       width: 160px;
-      height: 70px;
+      height: 96px;
       background: #0a0a1a;
       border-radius: 12px;
       border: 2px solid #333;
       overflow: hidden;
       position: relative;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 4px;
+      padding-top: 14px;
     }
 
     .slot-window .label {
@@ -140,6 +143,14 @@
       color: #f72585;
       text-shadow: 0 0 20px rgba(247, 37, 133, 0.5);
       animation: winPulse 0.5s ease;
+    }
+
+    .slot-window .task {
+      font-size: 0.62rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #888;
     }
 
     @keyframes slotSpin {
@@ -383,10 +394,12 @@
         <div class="slot-window">
           <span class="label">Victim #1</span>
           <span class="name" id="slot1">?</span>
+          <span class="task">Red Bean</span>
         </div>
         <div class="slot-window">
           <span class="label">Victim #2</span>
           <span class="name" id="slot2">?</span>
+          <span class="task">Yellow Bean</span>
         </div>
       </div>
       <button class="pull-btn" id="assignBtn" onclick="doAssign()">Pull the Lever</button>
