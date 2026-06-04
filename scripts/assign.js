@@ -338,7 +338,7 @@ async function sendTeamsNotification(pick1, pick2, cycle, round, runContext) {
                 items: [
                   { type: "TextBlock", text: "Victim #1", weight: "Bolder", color: "Attention" },
                   { type: "TextBlock", text: pick1, size: "Large", weight: "Bolder" },
-                  { type: "TextBlock", text: "Task: Red Bean", isSubtle: true, spacing: "Small" },
+                  { type: "TextBlock", text: "Task: Red Bin", isSubtle: true, spacing: "Small" },
                 ],
               },
               {
@@ -347,7 +347,7 @@ async function sendTeamsNotification(pick1, pick2, cycle, round, runContext) {
                 items: [
                   { type: "TextBlock", text: "Victim #2", weight: "Bolder", color: "Attention" },
                   { type: "TextBlock", text: pick2, size: "Large", weight: "Bolder" },
-                  { type: "TextBlock", text: "Task: Yellow Bean", isSubtle: true, spacing: "Small" },
+                  { type: "TextBlock", text: "Task: Yellow Bin", isSubtle: true, spacing: "Small" },
                 ],
               },
             ],

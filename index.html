@@ -26,10 +26,10 @@
       --danger: #f85149;
       --danger-soft: rgba(248, 81, 73, 0.12);
       --success: #3fb950;
-      --red-bean: #ff7b72;
-      --red-bean-soft: rgba(255, 123, 114, 0.14);
-      --yellow-bean: #e3b341;
-      --yellow-bean-soft: rgba(227, 179, 65, 0.14);
+      --red-bin: #ff7b72;
+      --red-bin-soft: rgba(255, 123, 114, 0.14);
+      --yellow-bin: #e3b341;
+      --yellow-bin-soft: rgba(227, 179, 65, 0.14);
       --shadow: 0 24px 64px rgba(1, 4, 9, 0.5);
       --shadow-soft: 0 12px 28px rgba(1, 4, 9, 0.36);
       --radius-xl: 22px;
@@ -342,11 +342,11 @@
     }
 
     .slot-window.slot-red::before {
-      background: linear-gradient(90deg, transparent, var(--red-bean), transparent);
+      background: linear-gradient(90deg, transparent, var(--red-bin), transparent);
     }
 
     .slot-window.slot-yellow::before {
-      background: linear-gradient(90deg, transparent, var(--yellow-bean), transparent);
+      background: linear-gradient(90deg, transparent, var(--yellow-bin), transparent);
     }
 
     .slot-window .label {
@@ -378,8 +378,8 @@
       animation: winPulse 0.45s ease;
     }
 
-    .slot-window.slot-red .name.winner { color: var(--red-bean); }
-    .slot-window.slot-yellow .name.winner { color: var(--yellow-bean); }
+    .slot-window.slot-red .name.winner { color: var(--red-bin); }
+    .slot-window.slot-yellow .name.winner { color: var(--yellow-bin); }
 
     .slot-window .task {
       display: inline-flex;
@@ -405,20 +405,20 @@
     }
 
     .slot-window.slot-red .task {
-      color: var(--red-bean);
-      background: var(--red-bean-soft);
+      color: var(--red-bin);
+      background: var(--red-bin-soft);
       border-color: rgba(255, 123, 114, 0.3);
     }
 
-    .slot-window.slot-red .task-dot { background: var(--red-bean); }
+    .slot-window.slot-red .task-dot { background: var(--red-bin); }
 
     .slot-window.slot-yellow .task {
-      color: var(--yellow-bean);
-      background: var(--yellow-bean-soft);
+      color: var(--yellow-bin);
+      background: var(--yellow-bin-soft);
       border-color: rgba(227, 179, 65, 0.3);
     }
 
-    .slot-window.slot-yellow .task-dot { background: var(--yellow-bean); }
+    .slot-window.slot-yellow .task-dot { background: var(--yellow-bin); }
 
     @keyframes slotSpin {
       0% { transform: translateY(-8px); opacity: 0.35; }
@@ -1152,12 +1152,12 @@
               <div class="slot-window slot-red">
                 <span class="label">Victim #1</span>
                 <span class="name" id="slot1">?</span>
-                <span class="task"><span class="task-dot"></span>Red Bean</span>
+                <span class="task"><span class="task-dot"></span>Red Bin</span>
               </div>
               <div class="slot-window slot-yellow">
                 <span class="label">Victim #2</span>
                 <span class="name" id="slot2">?</span>
-                <span class="task"><span class="task-dot"></span>Yellow Bean</span>
+                <span class="task"><span class="task-dot"></span>Yellow Bin</span>
               </div>
             </div>
 
