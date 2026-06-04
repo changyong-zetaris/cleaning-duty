@@ -5,50 +5,90 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cleaning Duty Roulette</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=IBM+Plex+Mono:wght@400;600&display=swap');
+
+    :root {
+      --bg: #090812;
+      --bg-glow: radial-gradient(circle at top, rgba(76, 201, 240, 0.16), transparent 32%);
+      --panel: #171729;
+      --panel-2: #10101d;
+      --panel-3: #1e1f35;
+      --line: #2d2f4b;
+      --line-strong: #4f5280;
+      --text: #eef0ff;
+      --muted: #8d90b3;
+      --soft: #5f6288;
+      --pink: #f72585;
+      --pink-2: #ff4fa1;
+      --cyan: #4cc9f0;
+      --violet: #7209b7;
+      --gold: #ffd166;
+      --danger: #ff6b6b;
+      --success: #60d394;
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+    }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: 'Poppins', sans-serif;
-      background: #0a0a1a;
-      color: #e0e0e0;
+      background: var(--bg);
+      background-image: var(--bg-glow);
+      color: var(--text);
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: 30px 16px;
+      padding: 28px 16px 40px;
       overflow-x: hidden;
     }
 
-    .container { max-width: 540px; width: 100%; }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        linear-gradient(135deg, rgba(247, 37, 133, 0.09), transparent 28%),
+        linear-gradient(315deg, rgba(76, 201, 240, 0.08), transparent 32%);
+      pointer-events: none;
+    }
 
-    /* Header */
+    .container {
+      max-width: 860px;
+      width: 100%;
+      position: relative;
+      z-index: 1;
+    }
+
     .header {
       text-align: center;
-      margin-bottom: 28px;
+      margin-bottom: 26px;
     }
 
     .header .date {
-      font-size: 0.85rem;
-      color: #888;
-      margin-bottom: 8px;
-      letter-spacing: 1px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
     }
 
     .header h1 {
-      font-size: 2rem;
+      font-size: clamp(2.2rem, 7vw, 3.3rem);
       font-weight: 800;
-      background: linear-gradient(135deg, #f72585, #7209b7, #3a0ca3, #4cc9f0);
-      background-size: 300% 300%;
+      line-height: 1;
+      background: linear-gradient(135deg, #ff5db1, #7209b7 45%, #4cc9f0 85%);
+      background-size: 250% 250%;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
-      animation: gradientShift 4s ease infinite;
+      animation: gradientShift 5s ease infinite;
     }
 
     .header .subtitle {
-      font-size: 0.85rem;
-      color: #666;
-      margin-top: 4px;
+      font-size: 0.9rem;
+      color: var(--soft);
+      margin-top: 8px;
+      letter-spacing: 0.4px;
     }
 
     @keyframes gradientShift {
@@ -56,22 +96,55 @@
       50% { background-position: 100% 50%; }
     }
 
-    /* Cycle info */
-    .cycle-info {
-      text-align: center;
-      font-size: 0.9rem;
-      color: #888;
-      margin-bottom: 20px;
+    .notice-strip {
+      background: linear-gradient(135deg, rgba(114, 9, 183, 0.22), rgba(76, 201, 240, 0.12));
+      border: 1px solid rgba(76, 201, 240, 0.25);
+      border-radius: 18px;
+      padding: 16px 18px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow);
     }
-    .cycle-info strong { color: #f72585; }
 
-    /* Slot machine */
+    .notice-strip.hidden { display: none; }
+
+    .notice-strip .eyebrow {
+      display: inline-block;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.68rem;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 8px;
+    }
+
+    .notice-strip .message {
+      font-size: 0.96rem;
+      line-height: 1.5;
+      color: var(--text);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .stack {
+      display: grid;
+      gap: 16px;
+    }
+
+    .card,
     .slot-machine {
-      background: linear-gradient(145deg, #1a1a2e, #16213e);
-      border: 2px solid #2a2a4a;
-      border-radius: 20px;
-      padding: 28px 20px;
-      margin-bottom: 24px;
+      background: linear-gradient(145deg, rgba(23, 23, 41, 0.98), rgba(11, 11, 23, 0.98));
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .slot-machine {
+      padding: 24px 22px;
       position: relative;
       overflow: hidden;
     }
@@ -79,57 +152,66 @@
     .slot-machine::before {
       content: '';
       position: absolute;
-      top: -2px; left: -2px; right: -2px; bottom: -2px;
-      border-radius: 20px;
-      background: linear-gradient(45deg, #f72585, #7209b7, #3a0ca3, #4cc9f0, #f72585);
-      background-size: 400% 400%;
-      z-index: -1;
-      animation: borderGlow 6s ease infinite;
-      opacity: 0.5;
+      inset: -1px;
+      border-radius: 24px;
+      padding: 1px;
+      background: linear-gradient(120deg, rgba(247, 37, 133, 0.7), rgba(114, 9, 183, 0.45), rgba(76, 201, 240, 0.65));
+      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
     }
 
-    @keyframes borderGlow {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
+    .cycle-info {
+      text-align: center;
+      font-size: 0.92rem;
+      color: var(--muted);
+      margin-bottom: 18px;
+      line-height: 1.5;
     }
+
+    .cycle-info strong { color: var(--pink-2); }
 
     .slot-windows {
       display: flex;
       gap: 16px;
       justify-content: center;
-      margin-bottom: 24px;
+      margin-bottom: 22px;
     }
 
     .slot-window {
-      width: 160px;
-      height: 96px;
-      background: #0a0a1a;
-      border-radius: 12px;
-      border: 2px solid #333;
+      width: 100%;
+      min-width: 0;
+      height: 114px;
+      background: linear-gradient(180deg, rgba(9, 8, 18, 0.98), rgba(15, 16, 34, 0.98));
+      border-radius: 18px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
       overflow: hidden;
       position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      padding-top: 14px;
+      gap: 6px;
+      padding: 18px 12px 12px;
     }
 
     .slot-window .label {
       position: absolute;
-      top: 4px;
-      left: 8px;
-      font-size: 0.55rem;
+      top: 8px;
+      left: 10px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 0.56rem;
       text-transform: uppercase;
       letter-spacing: 1.5px;
-      color: #555;
+      color: var(--soft);
     }
 
     .slot-window .name {
-      font-size: 1.2rem;
+      font-size: 1.24rem;
       font-weight: 800;
-      color: #4cc9f0;
+      text-align: center;
+      color: var(--cyan);
       transition: all 0.3s;
     }
 
@@ -140,17 +222,18 @@
     }
 
     .slot-window .name.winner {
-      color: #f72585;
-      text-shadow: 0 0 20px rgba(247, 37, 133, 0.5);
+      color: var(--pink-2);
+      text-shadow: 0 0 20px rgba(247, 37, 133, 0.45);
       animation: winPulse 0.5s ease;
     }
 
     .slot-window .task {
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 0.62rem;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: #888;
+      letter-spacing: 1.4px;
+      color: var(--muted);
     }
 
     @keyframes slotSpin {
@@ -165,200 +248,355 @@
       100% { transform: scale(1); }
     }
 
-    /* Lever / Button */
+    .pre-run-note {
+      display: none;
+      background: rgba(255, 209, 102, 0.1);
+      border: 1px solid rgba(255, 209, 102, 0.24);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 16px;
+      color: #ffe8a6;
+      font-size: 0.88rem;
+      line-height: 1.5;
+    }
+
+    .pre-run-note.visible { display: block; }
+
+    .pull-btn,
+    .mini-btn,
+    .icon-btn,
+    .danger-btn {
+      border: none;
+      border-radius: 14px;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+    }
+
     .pull-btn {
       display: block;
       width: 100%;
-      padding: 16px;
-      font-family: 'Poppins', sans-serif;
-      font-size: 1.1rem;
+      padding: 15px;
+      font-size: 1.02rem;
       font-weight: 800;
       color: #fff;
       background: linear-gradient(135deg, #f72585, #b5179e);
-      border: none;
-      border-radius: 14px;
-      cursor: pointer;
       text-transform: uppercase;
       letter-spacing: 2px;
-      transition: all 0.2s;
-      box-shadow: 0 4px 20px rgba(247, 37, 133, 0.3);
+      box-shadow: 0 10px 28px rgba(247, 37, 133, 0.3);
     }
 
-    .pull-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 30px rgba(247, 37, 133, 0.5);
+    .pull-btn:hover,
+    .mini-btn:hover,
+    .icon-btn:hover,
+    .danger-btn:hover {
+      transform: translateY(-1px);
     }
 
-    .pull-btn:active { transform: translateY(1px); }
-
-    .pull-btn:disabled {
-      background: #333;
-      box-shadow: none;
+    .pull-btn:disabled,
+    .mini-btn:disabled,
+    .icon-btn:disabled,
+    .danger-btn:disabled {
       cursor: not-allowed;
+      opacity: 0.55;
       transform: none;
+      box-shadow: none;
     }
 
-    /* Members grid */
-    .members-section {
-      margin-bottom: 20px;
+    .card {
+      padding: 18px;
     }
 
-    .members-section .section-title {
-      font-size: 0.75rem;
+    .card h2 {
+      font-size: 0.8rem;
+      font-weight: 700;
+      margin-bottom: 14px;
+      color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 2px;
-      color: #555;
+      letter-spacing: 1.6px;
+    }
+
+    .card .section-copy {
+      color: var(--soft);
+      font-size: 0.84rem;
+      line-height: 1.5;
       margin-bottom: 12px;
-      text-align: center;
+    }
+
+    .manager-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .double-row {
+      display: grid;
+      grid-template-columns: 144px minmax(0, 1fr) auto;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .text-input,
+    .date-input {
+      width: 100%;
+      border: 1px solid var(--line);
+      background: rgba(8, 8, 18, 0.72);
+      color: var(--text);
+      padding: 11px 12px;
+      border-radius: 12px;
+      font: inherit;
+      outline: none;
+    }
+
+    .text-input:focus,
+    .date-input:focus {
+      border-color: rgba(76, 201, 240, 0.55);
+      box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.12);
+    }
+
+    .mini-btn {
+      padding: 0 16px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg, rgba(76, 201, 240, 0.95), rgba(67, 97, 238, 0.95));
+      min-height: 44px;
+      white-space: nowrap;
+    }
+
+    .danger-btn {
+      width: 100%;
+      padding: 11px 16px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--danger);
+      background: transparent;
+      border: 1px solid rgba(255, 107, 107, 0.24);
+      text-transform: uppercase;
+      letter-spacing: 1px;
     }
 
     .members {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
+      grid-template-columns: repeat(auto-fit, minmax(122px, 1fr));
+      gap: 10px;
     }
 
     .member {
-      text-align: center;
-      padding: 10px 4px;
-      border-radius: 10px;
-      font-size: 0.78rem;
+      position: relative;
+      min-height: 76px;
+      border-radius: 16px;
+      padding: 14px 12px 12px;
+      font-size: 0.82rem;
       font-weight: 600;
-      transition: all 0.4s ease;
+      transition: all 0.35s ease;
       border: 1px solid transparent;
+      overflow: hidden;
+    }
+
+    .member::after {
+      content: '';
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
+      opacity: 0.18;
+    }
+
+    .member .member-name {
+      display: block;
+      padding-right: 22px;
+      word-break: break-word;
     }
 
     .member.available {
-      background: #1a1a2e;
-      color: #aaa;
+      background: linear-gradient(180deg, rgba(26, 26, 46, 1), rgba(16, 16, 29, 1));
+      color: #cfd2ef;
       border-color: #2a2a4a;
     }
 
     .member.selected {
-      background: linear-gradient(135deg, #f72585, #b5179e);
+      background: linear-gradient(135deg, rgba(247, 37, 133, 0.95), rgba(181, 23, 158, 0.92));
       color: #fff;
-      border-color: #f72585;
-      transform: scale(1.08);
-      box-shadow: 0 0 16px rgba(247, 37, 133, 0.4);
+      border-color: rgba(255, 255, 255, 0.12);
+      transform: scale(1.02);
+      box-shadow: 0 0 18px rgba(247, 37, 133, 0.28);
       animation: selectedGlow 1.5s ease infinite;
     }
 
-    @keyframes selectedGlow {
-      0%, 100% { box-shadow: 0 0 16px rgba(247, 37, 133, 0.4); }
-      50% { box-shadow: 0 0 24px rgba(247, 37, 133, 0.7); }
-    }
-
     .member.done {
-      background: #111;
-      color: #444;
+      background: rgba(17, 17, 17, 0.9);
+      color: #5c5e73;
       border-color: #1a1a1a;
       text-decoration: line-through;
     }
 
-    /* Cards */
-    .card {
-      background: #1a1a2e;
-      border: 1px solid #2a2a4a;
-      border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 14px;
+    @keyframes selectedGlow {
+      0%, 100% { box-shadow: 0 0 18px rgba(247, 37, 133, 0.25); }
+      50% { box-shadow: 0 0 26px rgba(247, 37, 133, 0.48); }
     }
 
-    .card h2 {
-      font-size: 0.85rem;
+    .icon-btn {
+      width: 28px;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .member-remove {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+    }
+
+    .pill-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .pill {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 12px 12px 12px 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(180deg, rgba(20, 20, 34, 0.95), rgba(13, 13, 24, 0.95));
+    }
+
+    .pill-info {
+      min-width: 0;
+    }
+
+    .pill-date {
+      font-family: 'IBM Plex Mono', monospace;
+      color: var(--cyan);
+      font-size: 0.78rem;
+      margin-bottom: 4px;
+    }
+
+    .pill-name {
       font-weight: 600;
-      margin-bottom: 12px;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
+      color: var(--text);
+      font-size: 0.9rem;
+      line-height: 1.4;
+      word-break: break-word;
+    }
+
+    .pill-meta {
+      margin-top: 5px;
+      font-size: 0.74rem;
+      color: var(--soft);
     }
 
     .history-item {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      padding: 9px 0;
-      border-bottom: 1px solid #1e1e3a;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 11px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
       font-size: 0.82rem;
     }
 
     .history-item:last-child { border-bottom: none; }
 
+    .history-text {
+      min-width: 0;
+      flex: 1;
+    }
+
     .history-item .date-round {
-      color: #555;
+      display: block;
+      color: var(--soft);
       font-size: 0.72rem;
-      min-width: 110px;
+      margin-bottom: 4px;
     }
 
     .history-item .names {
+      display: block;
       font-weight: 600;
-      color: #ccc;
+      color: #d8dbfa;
+      line-height: 1.45;
+      word-break: break-word;
     }
 
     .history-item.current .names {
-      color: #f72585;
+      color: var(--pink-2);
     }
 
-    .empty {
-      text-align: center;
-      color: #444;
-      padding: 16px;
-      font-size: 0.85rem;
+    .history-item .history-note {
+      display: block;
+      margin-top: 6px;
+      font-size: 0.73rem;
+      color: #ffe08a;
+      line-height: 1.45;
     }
 
-    /* Toggle */
     .toggle-header {
       cursor: pointer;
       user-select: none;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 8px;
     }
 
     .toggle-header .arrow {
       display: inline-block;
       transition: transform 0.2s;
-      font-size: 0.6rem;
-      color: #555;
+      font-size: 0.62rem;
+      color: var(--soft);
     }
+
     .toggle-header .arrow.open { transform: rotate(90deg); }
 
     .cycle-label {
+      font-family: 'IBM Plex Mono', monospace;
       font-size: 0.72rem;
-      font-weight: 700;
-      color: #7209b7;
-      padding: 10px 0 4px;
-      border-bottom: 1px solid #7209b720;
+      font-weight: 600;
+      color: var(--violet);
+      padding: 10px 0 5px;
+      border-bottom: 1px solid rgba(114, 9, 183, 0.18);
       margin-top: 6px;
-    }
-    .cycle-label:first-child { margin-top: 0; }
-
-    /* Reset */
-    .reset-btn {
-      display: block;
-      margin: 8px auto 0;
-      padding: 8px 20px;
-      font-family: 'Poppins', sans-serif;
-      font-size: 0.7rem;
-      color: #555;
-      background: none;
-      border: 1px solid #2a2a4a;
-      border-radius: 8px;
-      cursor: pointer;
       text-transform: uppercase;
       letter-spacing: 1px;
     }
-    .reset-btn:hover { color: #f72585; border-color: #f72585; }
 
-    /* Loading */
+    .cycle-label:first-child { margin-top: 0; }
+
+    .empty {
+      text-align: center;
+      color: #555a7b;
+      padding: 16px 10px;
+      font-size: 0.85rem;
+    }
+
+    .helper {
+      font-size: 0.74rem;
+      color: var(--soft);
+      line-height: 1.45;
+    }
+
     .loading {
       text-align: center;
-      color: #555;
+      color: var(--muted);
       padding: 60px 20px;
       font-size: 0.95rem;
     }
 
-    /* Confetti */
     .confetti-piece {
       position: fixed;
       width: 8px;
@@ -373,6 +611,31 @@
       0% { transform: translateY(0) rotate(0deg); opacity: 1; }
       100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
     }
+
+    @media (max-width: 860px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 20px 12px 32px;
+      }
+
+      .slot-windows {
+        flex-direction: column;
+      }
+
+      .slot-window {
+        height: 98px;
+      }
+
+      .form-row,
+      .double-row {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
@@ -380,49 +643,79 @@
     <div class="header">
       <div class="date" id="todayDate"></div>
       <h1>Cleaning Roulette</h1>
-      <div class="subtitle">Who's the lucky winner today?</div>
+      <div class="subtitle">Melbourne office cleaning picks, with holiday-aware scheduling.</div>
     </div>
 
     <div id="app"><div class="loading">Connecting to database...</div></div>
   </div>
 
   <template id="mainTemplate">
-    <div class="cycle-info" id="cycleInfo"></div>
+    <div class="notice-strip hidden" id="scheduleBanner">
+      <div class="eyebrow">Schedule Notice</div>
+      <div class="message" id="scheduleBannerMessage"></div>
+    </div>
 
-    <div class="slot-machine">
-      <div class="slot-windows">
-        <div class="slot-window">
-          <span class="label">Victim #1</span>
-          <span class="name" id="slot1">?</span>
-          <span class="task">Red Bean</span>
+    <div class="layout">
+      <div class="stack">
+        <div class="slot-machine">
+          <div class="cycle-info" id="cycleInfo"></div>
+          <div class="pre-run-note" id="preRunNote"></div>
+
+          <div class="slot-windows">
+            <div class="slot-window">
+              <span class="label">Victim #1</span>
+              <span class="name" id="slot1">?</span>
+              <span class="task">Red Bean</span>
+            </div>
+            <div class="slot-window">
+              <span class="label">Victim #2</span>
+              <span class="name" id="slot2">?</span>
+              <span class="task">Yellow Bean</span>
+            </div>
+          </div>
+
+          <button class="pull-btn" id="assignBtn" onclick="doAssign()">Pull the Lever</button>
         </div>
-        <div class="slot-window">
-          <span class="label">Victim #2</span>
-          <span class="name" id="slot2">?</span>
-          <span class="task">Yellow Bean</span>
+
+        <div class="card">
+          <h2>Current Cycle</h2>
+          <div id="cycleHistory"><div class="empty">No assignments yet</div></div>
+        </div>
+
+        <div class="card">
+          <h2 class="toggle-header" onclick="toggleFull()">
+            <span class="arrow" id="arrow">&#9654;</span> Full History
+          </h2>
+          <div id="fullHistory" style="display:none;"></div>
+        </div>
+
+        <button class="danger-btn" onclick="doReset()">Reset All</button>
+      </div>
+
+      <div class="stack">
+        <div class="card">
+          <h2>Candidates</h2>
+          <div class="section-copy">Add or remove roulette candidates directly from the UI. Removing a candidate updates future rounds immediately.</div>
+          <div class="form-row">
+            <input class="text-input" id="memberNameInput" type="text" placeholder="Add a candidate name" />
+            <button class="mini-btn" onclick="addMember()">Add Candidate</button>
+          </div>
+          <div class="members" id="membersGrid"></div>
+        </div>
+
+        <div class="card">
+          <h2>Public Holidays</h2>
+          <div class="section-copy">Official Melbourne/Victoria holidays are shown here. You can hide one from scheduling or add your own office-specific holiday.</div>
+          <div class="double-row">
+            <input class="date-input" id="holidayDateInput" type="date" />
+            <input class="text-input" id="holidayNameInput" type="text" placeholder="Holiday name" />
+            <button class="mini-btn" onclick="addHoliday()">Add Holiday</button>
+          </div>
+          <div class="helper" id="holidayHelper"></div>
+          <div class="pill-list" id="holidaysList"></div>
         </div>
       </div>
-      <button class="pull-btn" id="assignBtn" onclick="doAssign()">Pull the Lever</button>
     </div>
-
-    <div class="members-section">
-      <div class="section-title">Players</div>
-      <div class="members" id="membersGrid"></div>
-    </div>
-
-    <div class="card">
-      <h2>Current Cycle</h2>
-      <div id="cycleHistory"><div class="empty">No assignments yet</div></div>
-    </div>
-
-    <div class="card">
-      <h2 class="toggle-header" onclick="toggleFull()">
-        <span class="arrow" id="arrow">&#9654;</span> Full History
-      </h2>
-      <div id="fullHistory" style="display:none;"></div>
-    </div>
-
-    <button class="reset-btn" onclick="doReset()">Reset All</button>
   </template>
 
   <script type="module">
@@ -446,78 +739,430 @@
     const configRef = doc(db, "cleaning", "config");
 
     const DEFAULT_STATE = { remaining: [], cycle: 0, history: [] };
+    const DEFAULT_CONFIG = {
+      members: [],
+      holidayOverrides: { additions: [], exclusions: [] }
+    };
 
-    let MEMBERS = [];       // [{name, email}, ...]
-    let MEMBER_NAMES = [];  // ["Brian", ...]
-    let currentState = { ...DEFAULT_STATE };
+    const MELBOURNE_TIMEZONE = "Australia/Melbourne";
+    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+    let MEMBERS = [];
+    let MEMBER_NAMES = [];
+    let currentConfig = structuredClone(DEFAULT_CONFIG);
+    let currentState = structuredClone(DEFAULT_STATE);
     let fullOpen = false;
     let initialized = false;
     let isSpinning = false;
+    let configLoaded = false;
+    let stateLoaded = false;
+    let holidayApiCache = new Map();
+    let holidayHelperMessage = "Loading Melbourne public holidays...";
 
-    // Show today's date
     function showDate() {
       const el = document.getElementById("todayDate");
-      if (el) el.textContent = formatDate(new Date());
+      if (el) el.textContent = formatDateString(getMelbourneToday());
     }
 
-    function formatDate(d) {
-      if (typeof d === 'string') d = new Date(d);
-      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-      const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      return `${days[d.getDay()]}, ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    function getMelbourneToday() {
+      return new Intl.DateTimeFormat("en-CA", {
+        timeZone: MELBOURNE_TIMEZONE,
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit"
+      }).format(new Date());
+    }
+
+    function parseDateString(dateString) {
+      const [year, month, day] = dateString.split("-").map(Number);
+      return { year, month, day };
+    }
+
+    function formatDate(value) {
+      if (!value) return "";
+      if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return formatDateString(value);
+      }
+      const d = typeof value === "string" ? new Date(value) : value;
+      return `${dayNames[d.getDay()]}, ${d.getDate()} ${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    function formatDateString(dateString) {
+      const { year, month, day } = parseDateString(dateString);
+      const utcDate = new Date(Date.UTC(year, month - 1, day));
+      return `${dayNames[utcDate.getUTCDay()]}, ${day} ${monthNames[month - 1]} ${year}`;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function addDays(dateString, days) {
+      const { year, month, day } = parseDateString(dateString);
+      const utcDate = new Date(Date.UTC(year, month - 1, day));
+      utcDate.setUTCDate(utcDate.getUTCDate() + days);
+      return toDateString(utcDate);
     }
 
     function toDateString(d) {
-      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+      return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
     }
 
-    // --- Load members from Firestore, then start ---
-    async function init() {
-      try {
-        const configSnap = await getDoc(configRef);
-        if (!configSnap.exists() || !configSnap.data().members) {
-          document.getElementById("app").innerHTML =
-            '<div class="loading">Members not configured. Add a "config" document in Firestore.</div>';
+    function getDayOfWeek(dateString) {
+      const { year, month, day } = parseDateString(dateString);
+      return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+    }
+
+    function uniqueNames(names) {
+      const seen = new Set();
+      return names.filter((name) => {
+        if (!name || seen.has(name)) return false;
+        seen.add(name);
+        return true;
+      });
+    }
+
+    function normalizeMembers(members) {
+      if (!Array.isArray(members)) return [];
+      return members
+        .map((member) => {
+          if (typeof member === "string") {
+            const name = member.trim();
+            return name ? { name, email: "" } : null;
+          }
+
+          const name = String(member?.name || "").trim();
+          if (!name) return null;
+          return {
+            ...member,
+            name,
+            email: typeof member?.email === "string" ? member.email : ""
+          };
+        })
+        .filter(Boolean)
+        .filter((member, index, arr) => arr.findIndex((entry) => entry.name === member.name) === index);
+    }
+
+    function normalizeHolidayOverrides(holidayOverrides) {
+      const additions = Array.isArray(holidayOverrides?.additions)
+        ? holidayOverrides.additions
+            .map((holiday) => ({
+              date: String(holiday?.date || ""),
+              name: String(holiday?.name || "").trim()
+            }))
+            .filter((holiday) => /^\d{4}-\d{2}-\d{2}$/.test(holiday.date) && holiday.name)
+            .filter((holiday, index, arr) => arr.findIndex((entry) => entry.date === holiday.date) === index)
+        : [];
+
+      const exclusions = Array.isArray(holidayOverrides?.exclusions)
+        ? uniqueNames(holidayOverrides.exclusions.map((date) => String(date || "").trim()).filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date)))
+        : [];
+
+      return { additions, exclusions };
+    }
+
+    function normalizeConfig(config) {
+      return {
+        members: normalizeMembers(config?.members),
+        holidayOverrides: normalizeHolidayOverrides(config?.holidayOverrides)
+      };
+    }
+
+    function createHistoryId() {
+      if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+      return `history-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+    }
+
+    function normalizeHistory(history) {
+      if (!Array.isArray(history)) return [];
+      return history.map((entry, index) => ({
+        ...entry,
+        id: entry?.id || `legacy-${index}-${entry?.date || "unknown"}`,
+        assigned: Array.isArray(entry?.assigned) ? entry.assigned.filter(Boolean) : [],
+        date: entry?.date || "",
+        scheduledFor: entry?.scheduledFor || entry?.date || "",
+        advancedForHoliday: Boolean(entry?.advancedForHoliday),
+        holidayName: entry?.holidayName || "",
+        holidayDate: entry?.holidayDate || "",
+        round: Number(entry?.round || 0),
+        cycle: Number(entry?.cycle || 0)
+      }));
+    }
+
+    function getCurrentCycleCount(history, cycle) {
+      return history.filter((entry) => entry.cycle === cycle).length;
+    }
+
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function reconcileStateWithMembers(state, memberNames) {
+      const history = normalizeHistory(state?.history);
+      const cycle = Number(state?.cycle || 0);
+      const currentCycleAssigned = new Set(
+        history
+          .filter((entry) => entry.cycle === cycle)
+          .flatMap((entry) => entry.assigned)
+          .filter((name) => memberNames.includes(name))
+      );
+
+      const dedupedRemaining = uniqueNames(
+        Array.isArray(state?.remaining)
+          ? state.remaining.filter((name) => memberNames.includes(name))
+          : []
+      ).filter((name) => !currentCycleAssigned.has(name));
+
+      const missingRemaining = memberNames.filter((name) => !currentCycleAssigned.has(name) && !dedupedRemaining.includes(name));
+
+      return {
+        cycle,
+        history,
+        remaining: [...dedupedRemaining, ...shuffle(missingRemaining)]
+      };
+    }
+
+    function rebuildStateFromHistory(history, memberNames) {
+      const normalizedHistory = normalizeHistory(history);
+      if (normalizedHistory.length === 0) {
+        return structuredClone(DEFAULT_STATE);
+      }
+
+      let cycle = 0;
+      let round = 0;
+      let assignedInCycle = new Set();
+      const nextHistory = [];
+
+      normalizedHistory.forEach((entry) => {
+        const relevantAssigned = entry.assigned.filter((name) => memberNames.includes(name));
+        const availableCount = memberNames.filter((name) => !assignedInCycle.has(name)).length;
+        const startsNewCycle =
+          cycle === 0 ||
+          relevantAssigned.some((name) => assignedInCycle.has(name)) ||
+          availableCount < Math.max(relevantAssigned.length, 2);
+
+        if (startsNewCycle) {
+          cycle += 1;
+          round = 0;
+          assignedInCycle = new Set();
+        }
+
+        round += 1;
+        relevantAssigned.forEach((name) => assignedInCycle.add(name));
+
+        nextHistory.push({
+          ...entry,
+          id: entry.id || createHistoryId(),
+          cycle,
+          round
+        });
+      });
+
+      return {
+        cycle,
+        history: nextHistory,
+        remaining: memberNames.filter((name) => !assignedInCycle.has(name))
+      };
+    }
+
+    async function fetchApiHolidaysForYears(years) {
+      const uniqueYears = [...new Set(years)];
+      const missingYears = uniqueYears.filter((year) => !holidayApiCache.has(year));
+
+      if (missingYears.length > 0) {
+        await Promise.all(missingYears.map(async (year) => {
+          try {
+            const response = await fetch(`https://date.nager.at/api/v3/PublicHolidays/${year}/AU`);
+            if (!response.ok) throw new Error(`Holiday API returned ${response.status}`);
+            const data = await response.json();
+            holidayApiCache.set(year, data);
+          } catch (error) {
+            console.error("Failed to fetch holidays:", error);
+            holidayApiCache.set(year, { error: error.message, items: [] });
+          }
+        }));
+      }
+
+      const apiEntries = [];
+      const errors = [];
+
+      uniqueYears.forEach((year) => {
+        const cached = holidayApiCache.get(year);
+        const items = Array.isArray(cached) ? cached : cached?.items || [];
+
+        if (!Array.isArray(cached) && cached?.error) {
+          errors.push(cached.error);
           return;
         }
-        MEMBERS = configSnap.data().members;
-        MEMBER_NAMES = MEMBERS.map(m => m.name);
-        startListening();
-      } catch (error) {
-        console.error("Failed to load config:", error);
-        document.getElementById("app").innerHTML =
-          '<div class="loading">Failed to connect. Check console for details.</div>';
-      }
+
+        items
+          .filter((holiday) => holiday.counties === null || holiday.counties.includes("AU-VIC"))
+          .forEach((holiday) => {
+            apiEntries.push({
+              date: holiday.date,
+              name: holiday.localName || holiday.name,
+              hasApiSource: true,
+              hasCustomSource: false
+            });
+          });
+      });
+
+      holidayHelperMessage = errors.length > 0
+        ? "Holiday API is temporarily unavailable. Custom holidays still work."
+        : "Official Victoria holidays are synced automatically, and you can override them below.";
+
+      return apiEntries;
     }
 
-    function startListening() {
-      onSnapshot(stateRef, (snapshot) => {
-        if (!initialized) {
-          document.getElementById("app").innerHTML =
-            document.getElementById("mainTemplate").innerHTML;
-          initialized = true;
-          showDate();
-        }
+    function getEffectiveHolidays(config, apiEntries) {
+      const overrides = normalizeHolidayOverrides(config?.holidayOverrides);
+      const holidayMap = new Map();
 
-        if (snapshot.exists()) {
-          currentState = snapshot.data();
-        } else {
-          currentState = { ...DEFAULT_STATE };
-        }
+      apiEntries.forEach((holiday) => {
+        if (overrides.exclusions.includes(holiday.date)) return;
+        holidayMap.set(holiday.date, { ...holiday });
+      });
 
-        if (!isSpinning) render(currentState);
+      overrides.additions.forEach((holiday) => {
+        const existing = holidayMap.get(holiday.date);
+        holidayMap.set(holiday.date, {
+          date: holiday.date,
+          name: holiday.name,
+          hasApiSource: Boolean(existing?.hasApiSource),
+          hasCustomSource: true
+        });
+      });
+
+      return [...holidayMap.values()].sort((a, b) => a.date.localeCompare(b.date));
+    }
+
+    function getHolidayMap(holidays) {
+      return new Map(holidays.map((holiday) => [holiday.date, holiday]));
+    }
+
+    function getCachedApiHolidayEntries() {
+      return [...holidayApiCache.values()]
+        .flatMap((entry) => Array.isArray(entry) ? entry : [])
+        .filter((holiday) => holiday.counties === null || holiday.counties?.includes("AU-VIC"))
+        .map((holiday) => ({
+          date: holiday.date,
+          name: holiday.localName || holiday.name,
+          hasApiSource: true,
+          hasCustomSource: false
+        }));
+    }
+
+    function getUpcomingScheduleNotice(holidays) {
+      const holidayMap = getHolidayMap(holidays);
+      const today = getMelbourneToday();
+      const dayOfWeek = getDayOfWeek(today);
+      const nextMondayOffset = dayOfWeek === 1 ? 7 : (8 - dayOfWeek) % 7 || 7;
+      const nextMonday = addDays(today, nextMondayOffset);
+      const mondayHoliday = holidayMap.get(nextMonday);
+
+      if (mondayHoliday) {
+        const previousThursday = addDays(nextMonday, -4);
+        return `Next automatic run moves to ${formatDateString(previousThursday)} because ${formatDateString(nextMonday)} is ${mondayHoliday.name}.`;
+      }
+
+      return `Next automatic run is on ${formatDateString(nextMonday)} unless that Monday is marked as a holiday.`;
+    }
+
+    function renderScheduleBanner(state, holidays) {
+      const banner = document.getElementById("scheduleBanner");
+      const message = document.getElementById("scheduleBannerMessage");
+      const latest = state.history.at(-1);
+
+      let text = "";
+      if (latest?.advancedForHoliday && latest?.holidayDate) {
+        text = `This round was drawn early on ${formatDate(latest.date)} because ${formatDate(latest.holidayDate)} is ${latest.holidayName || "a holiday"}.`;
+      } else {
+        text = getUpcomingScheduleNotice(holidays);
+      }
+
+      if (!text) {
+        banner.classList.add("hidden");
+        message.textContent = "";
+        return;
+      }
+
+      banner.classList.remove("hidden");
+      message.textContent = text;
+    }
+
+    function renderPreRunNote(current) {
+      const noteEl = document.getElementById("preRunNote");
+      if (!current?.advancedForHoliday || !current?.holidayDate) {
+        noteEl.className = "pre-run-note";
+        noteEl.textContent = "";
+        return;
+      }
+
+      noteEl.className = "pre-run-note visible";
+      noteEl.textContent = `Drawn early on ${formatDate(current.date)} — because ${formatDate(current.holidayDate)} is ${current.holidayName || "a holiday"}, the draw ran on Thursday instead of the usual Monday.`;
+    }
+
+    async function ensureHolidayData() {
+      const today = getMelbourneToday();
+      const year = Number(today.slice(0, 4));
+      const years = [year, year + 1];
+      const apiEntries = await fetchApiHolidaysForYears(years);
+      renderCurrent();
+      return apiEntries;
+    }
+
+    function ensureAppShell() {
+      if (initialized) return;
+      document.getElementById("app").innerHTML = document.getElementById("mainTemplate").innerHTML;
+      initialized = true;
+      showDate();
+    }
+
+    function renderCurrent() {
+      if (!initialized || !configLoaded || !stateLoaded || isSpinning) return;
+      render(reconcileStateWithMembers(currentState, MEMBER_NAMES));
+    }
+
+    async function init() {
+      ensureAppShell();
+
+      onSnapshot(configRef, async (snapshot) => {
+        currentConfig = normalizeConfig(snapshot.exists() ? snapshot.data() : DEFAULT_CONFIG);
+        MEMBERS = currentConfig.members;
+        MEMBER_NAMES = MEMBERS.map((member) => member.name);
+        configLoaded = true;
+        await ensureHolidayData();
+        renderCurrent();
       }, (error) => {
-        console.error("Firestore error:", error);
-        document.getElementById("app").innerHTML =
-          '<div class="loading">Failed to connect. Check console for details.</div>';
+        console.error("Failed to load config:", error);
+        document.getElementById("app").innerHTML = '<div class="loading">Failed to load config. Check console for details.</div>';
+      });
+
+      onSnapshot(stateRef, (snapshot) => {
+        currentState = snapshot.exists() ? snapshot.data() : structuredClone(DEFAULT_STATE);
+        stateLoaded = true;
+        renderCurrent();
+      }, (error) => {
+        console.error("Failed to load state:", error);
+        document.getElementById("app").innerHTML = '<div class="loading">Failed to load state. Check console for details.</div>';
       });
     }
 
     init();
 
-    // --- Slot machine animation ---
     function spinSlots(pick1, pick2) {
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         isSpinning = true;
         const slot1 = document.getElementById("slot1");
         const slot2 = document.getElementById("slot2");
@@ -527,28 +1172,26 @@
 
         let spinCount = 0;
         const spinInterval = setInterval(() => {
-          slot1.textContent = MEMBER_NAMES[Math.floor(Math.random() * MEMBER_NAMES.length)];
-          slot2.textContent = MEMBER_NAMES[Math.floor(Math.random() * MEMBER_NAMES.length)];
-          spinCount++;
+          slot1.textContent = MEMBER_NAMES[Math.floor(Math.random() * MEMBER_NAMES.length)] || "?";
+          slot2.textContent = MEMBER_NAMES[Math.floor(Math.random() * MEMBER_NAMES.length)] || "?";
+          spinCount += 1;
 
           if (spinCount > 20) {
             clearInterval(spinInterval);
 
-            // Slow down slot 1
             let slow1 = 0;
             const slowInterval1 = setInterval(() => {
-              slot1.textContent = MEMBER_NAMES[Math.floor(Math.random() * MEMBER_NAMES.length)];
-              slow1++;
+              slot1.textContent = MEMBER_NAMES[Math.floor(Math.random() * MEMBER_NAMES.length)] || "?";
+              slow1 += 1;
               if (slow1 > 5) {
                 clearInterval(slowInterval1);
                 slot1.textContent = pick1;
                 slot1.className = "name winner";
 
-                // Slow down slot 2
                 let slow2 = 0;
                 const slowInterval2 = setInterval(() => {
-                  slot2.textContent = MEMBER_NAMES[Math.floor(Math.random() * MEMBER_NAMES.length)];
-                  slow2++;
+                  slot2.textContent = MEMBER_NAMES[Math.floor(Math.random() * MEMBER_NAMES.length)] || "?";
+                  slow2 += 1;
                   if (slow2 > 5) {
                     clearInterval(slowInterval2);
                     slot2.textContent = pick2;
@@ -566,80 +1209,183 @@
     }
 
     function launchConfetti() {
-      const colors = ['#f72585', '#7209b7', '#3a0ca3', '#4361ee', '#4cc9f0', '#ffd60a'];
+      const colors = ["#f72585", "#7209b7", "#3a0ca3", "#4361ee", "#4cc9f0", "#ffd166"];
       for (let i = 0; i < 40; i++) {
-        const piece = document.createElement('div');
-        piece.className = 'confetti-piece';
-        piece.style.left = Math.random() * 100 + 'vw';
-        piece.style.top = '-10px';
+        const piece = document.createElement("div");
+        piece.className = "confetti-piece";
+        piece.style.left = `${Math.random() * 100}vw`;
+        piece.style.top = "-10px";
         piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-        piece.style.animationDelay = Math.random() * 0.5 + 's';
-        piece.style.animationDuration = (1 + Math.random()) + 's';
+        piece.style.animationDelay = `${Math.random() * 0.5}s`;
+        piece.style.animationDuration = `${1 + Math.random()}s`;
         document.body.appendChild(piece);
         setTimeout(() => piece.remove(), 2500);
       }
     }
 
-    // --- Actions ---
+    async function saveConfig(nextConfig) {
+      await setDoc(configRef, normalizeConfig(nextConfig));
+    }
+
+    async function saveState(nextState) {
+      await setDoc(stateRef, {
+        cycle: Number(nextState.cycle || 0),
+        remaining: Array.isArray(nextState.remaining) ? nextState.remaining : [],
+        history: normalizeHistory(nextState.history)
+      });
+    }
+
     window.doAssign = async function () {
       if (isSpinning) return;
-      const state = { ...currentState, remaining: [...currentState.remaining], history: [...currentState.history] };
+      const state = reconcileStateWithMembers(currentState, MEMBER_NAMES);
+
+      if (MEMBER_NAMES.length < 2) {
+        alert("Add at least two candidates before running the roulette.");
+        return;
+      }
 
       if (state.remaining.length < 2) {
-        state.cycle++;
-        state.remaining = [...MEMBER_NAMES];
-        shuffle(state.remaining);
+        state.cycle = (state.cycle || 0) + 1;
+        state.remaining = shuffle(MEMBER_NAMES);
       }
 
       const idx1 = Math.floor(Math.random() * state.remaining.length);
       const pick1 = state.remaining.splice(idx1, 1)[0];
       const idx2 = Math.floor(Math.random() * state.remaining.length);
       const pick2 = state.remaining.splice(idx2, 1)[0];
+      const today = getMelbourneToday();
+      const roundNum = getCurrentCycleCount(state.history, state.cycle) + 1;
 
-      const roundNum = (MEMBER_NAMES.length - state.remaining.length) / 2;
-      const dateStr = toDateString(new Date());
-
-      state.history.push({
-        cycle: state.cycle,
-        round: roundNum,
-        assigned: [pick1, pick2],
-        date: dateStr,
-      });
+      const nextState = {
+        ...state,
+        history: [
+          ...state.history,
+          {
+            id: createHistoryId(),
+            cycle: state.cycle,
+            round: roundNum,
+            assigned: [pick1, pick2],
+            date: today,
+            scheduledFor: today,
+            advancedForHoliday: false,
+            holidayName: "",
+            holidayDate: ""
+          }
+        ]
+      };
 
       document.getElementById("assignBtn").disabled = true;
-
       await spinSlots(pick1, pick2);
-      await setDoc(stateRef, state);
-
+      await saveState(nextState);
       document.getElementById("assignBtn").disabled = false;
-      render(state);
+      render(nextState);
     };
 
     window.doReset = async function () {
-      if (!confirm("Reset all history?")) return;
-      await setDoc(stateRef, { ...DEFAULT_STATE });
+      if (!confirm("Reset all history and current cycle?")) return;
+      await saveState(structuredClone(DEFAULT_STATE));
     };
 
     window.toggleFull = function () {
       fullOpen = !fullOpen;
       document.getElementById("fullHistory").style.display = fullOpen ? "block" : "none";
-      document.getElementById("arrow").className = "arrow" + (fullOpen ? " open" : "");
-      if (fullOpen) renderFullHistory(currentState);
+      document.getElementById("arrow").className = `arrow${fullOpen ? " open" : ""}`;
+      if (fullOpen) renderFullHistory(reconcileStateWithMembers(currentState, MEMBER_NAMES));
     };
 
-    // --- Rendering ---
+    window.addMember = async function () {
+      const input = document.getElementById("memberNameInput");
+      const name = input.value.trim();
+      if (!name) return;
+      if (MEMBER_NAMES.includes(name)) {
+        alert("That candidate already exists.");
+        return;
+      }
+
+      const nextMembers = [...MEMBERS, { name, email: "" }];
+      const nextState = reconcileStateWithMembers(currentState, nextMembers.map((member) => member.name));
+      await saveConfig({ ...currentConfig, members: nextMembers });
+      await saveState(nextState);
+      input.value = "";
+    };
+
+    window.removeMember = async function (name) {
+      if (!confirm(`Remove ${name} from the candidate list?`)) return;
+      const nextMembers = MEMBERS.filter((member) => member.name !== name);
+      const nextState = reconcileStateWithMembers(currentState, nextMembers.map((member) => member.name));
+      await saveConfig({ ...currentConfig, members: nextMembers });
+      await saveState(nextState);
+    };
+
+    window.addHoliday = async function () {
+      const dateInput = document.getElementById("holidayDateInput");
+      const nameInput = document.getElementById("holidayNameInput");
+      const date = dateInput.value;
+      const name = nameInput.value.trim();
+
+      if (!date || !name) {
+        alert("Enter both a date and a holiday name.");
+        return;
+      }
+
+      const overrides = normalizeHolidayOverrides(currentConfig.holidayOverrides);
+      const nextAdditions = [
+        ...overrides.additions.filter((holiday) => holiday.date !== date),
+        { date, name }
+      ].sort((a, b) => a.date.localeCompare(b.date));
+
+      const nextExclusions = overrides.exclusions.filter((excludedDate) => excludedDate !== date);
+      await saveConfig({
+        ...currentConfig,
+        holidayOverrides: {
+          additions: nextAdditions,
+          exclusions: nextExclusions
+        }
+      });
+
+      dateInput.value = "";
+      nameInput.value = "";
+    };
+
+    window.removeHoliday = async function (date) {
+      const holidays = getEffectiveHolidays(currentConfig, await fetchApiHolidaysForYears([Number(date.slice(0, 4))]));
+      const target = holidays.find((holiday) => holiday.date === date);
+      if (!target) return;
+
+      const overrides = normalizeHolidayOverrides(currentConfig.holidayOverrides);
+      await saveConfig({
+        ...currentConfig,
+        holidayOverrides: {
+          additions: overrides.additions.filter((holiday) => holiday.date !== date),
+          exclusions: target.hasApiSource
+            ? uniqueNames([...overrides.exclusions, date])
+            : overrides.exclusions
+        }
+      });
+    };
+
+    window.deleteHistoryItem = async function (index) {
+      if (!confirm("Delete this history entry?")) return;
+      const state = reconcileStateWithMembers(currentState, MEMBER_NAMES);
+      const nextHistory = state.history.filter((_, historyIndex) => historyIndex !== index);
+      await saveState(rebuildStateFromHistory(nextHistory, MEMBER_NAMES));
+    };
+
     function render(state) {
+      const holidays = getEffectiveHolidays(currentConfig, getCachedApiHolidayEntries());
       const current = state.history.length > 0 ? state.history[state.history.length - 1] : null;
       const currentAssigned = current ? current.assigned : [];
       const remainingSet = new Set(state.remaining);
 
-      // Slot windows
+      renderScheduleBanner(state, holidays);
+      renderPreRunNote(current);
+
       const slot1 = document.getElementById("slot1");
       const slot2 = document.getElementById("slot2");
       if (current && !isSpinning) {
-        slot1.textContent = current.assigned[0];
+        slot1.textContent = current.assigned[0] || "?";
         slot1.className = "name winner";
-        slot2.textContent = current.assigned[1];
+        slot2.textContent = current.assigned[1] || "?";
         slot2.className = "name winner";
       } else if (!current) {
         slot1.textContent = "?";
@@ -648,40 +1394,77 @@
         slot2.className = "name";
       }
 
-      // Members grid
-      document.getElementById("membersGrid").innerHTML = MEMBER_NAMES.map(name => {
-        let cls = "member ";
-        if (currentAssigned.includes(name)) cls += "selected";
-        else if (remainingSet.has(name)) cls += "available";
-        else if (state.cycle > 0) cls += "done";
-        else cls += "available";
-        return `<div class="${cls}">${name}</div>`;
-      }).join("");
+      document.getElementById("membersGrid").innerHTML = MEMBER_NAMES.length === 0
+        ? '<div class="empty">No candidates yet</div>'
+        : MEMBER_NAMES.map((name) => {
+            let cls = "member ";
+            if (currentAssigned.includes(name)) cls += "selected";
+            else if (remainingSet.has(name)) cls += "available";
+            else if (state.cycle > 0) cls += "done";
+            else cls += "available";
 
-      // Cycle info
+            const encodedName = encodeURIComponent(name);
+            const safeName = escapeHtml(name);
+
+            return `<div class="${cls}">
+              <button class="icon-btn member-remove" onclick="removeMember(decodeURIComponent('${encodedName}'))" aria-label="Remove ${safeName}">x</button>
+              <span class="member-name">${safeName}</span>
+            </div>`;
+          }).join("");
+
       const info = document.getElementById("cycleInfo");
-      if (state.cycle === 0) {
-        info.innerHTML = "Pull the lever to find today's lucky cleaners!";
+      if (MEMBER_NAMES.length < 2) {
+        info.innerHTML = "Add at least <strong>2 candidates</strong> to start the roulette.";
+      } else if (state.cycle === 0) {
+        info.innerHTML = "Pull the lever to find this round's lucky cleaners!";
       } else {
         const left = state.remaining.length;
-        info.innerHTML = `Cycle <strong>#${state.cycle}</strong> &mdash; ${left === 0 ? "Cycle complete! Next pull starts a new cycle." : (left / 2) + " rounds remaining"}`;
+        info.innerHTML = `Cycle <strong>#${state.cycle}</strong> &middot; ${left < 2 ? "Current cycle is almost done. The next pull starts a new cycle." : `${Math.floor(left / 2)} rounds remaining`}`;
       }
 
-      // Current cycle history
-      const cycleItems = state.history.filter(h => h.cycle === state.cycle);
+      const cycleItems = state.history
+        .map((entry, index) => ({ ...entry, historyIndex: index }))
+        .filter((entry) => entry.cycle === state.cycle);
       const cycleEl = document.getElementById("cycleHistory");
+
       if (cycleItems.length === 0) {
         cycleEl.innerHTML = '<div class="empty">No assignments yet</div>';
       } else {
-        cycleEl.innerHTML = cycleItems.map((h, i) => {
-          const isCurrent = i === cycleItems.length - 1;
-          const dateStr = h.date ? formatDate(h.date + "T00:00:00") : "";
+        cycleEl.innerHTML = cycleItems.map((entry, index) => {
+          const isCurrent = index === cycleItems.length - 1;
+          const note = entry.advancedForHoliday && entry.holidayDate
+            ? `<span class="history-note">Ran early on ${escapeHtml(formatDate(entry.date))} because ${escapeHtml(formatDate(entry.holidayDate))} is ${escapeHtml(entry.holidayName || "a holiday")}.</span>`
+            : "";
           return `<div class="history-item${isCurrent ? " current" : ""}">
-            <span class="date-round">${dateStr} &middot; R${h.round}</span>
-            <span class="names">${h.assigned[0]} & ${h.assigned[1]}</span>
+            <div class="history-text">
+              <span class="date-round">${escapeHtml(formatDate(entry.date))} &middot; R${entry.round}</span>
+              <span class="names">${escapeHtml(entry.assigned[0] || "?")} & ${escapeHtml(entry.assigned[1] || "?")}</span>
+              ${note}
+            </div>
+            <button class="icon-btn" onclick="deleteHistoryItem(${entry.historyIndex})" aria-label="Delete history item">x</button>
           </div>`;
         }).join("");
       }
+
+      document.getElementById("holidayHelper").textContent = holidayHelperMessage;
+      const holidaysList = document.getElementById("holidaysList");
+      holidaysList.innerHTML = holidays.length === 0
+        ? '<div class="empty">No holidays configured</div>'
+        : holidays.map((holiday) => {
+            const sourceLabel = holiday.hasApiSource && holiday.hasCustomSource
+              ? "Official + custom"
+              : holiday.hasCustomSource
+                ? "Custom office holiday"
+                : "Official Victoria holiday";
+            return `<div class="pill">
+              <div class="pill-info">
+                <div class="pill-date">${escapeHtml(holiday.date)}</div>
+                <div class="pill-name">${escapeHtml(holiday.name)}</div>
+                <div class="pill-meta">${escapeHtml(sourceLabel)}</div>
+              </div>
+              <button class="icon-btn" onclick='removeHoliday(${JSON.stringify(holiday.date)})' aria-label="Remove holiday">x</button>
+            </div>`;
+          }).join("");
 
       if (fullOpen) renderFullHistory(state);
     }
@@ -694,27 +1477,29 @@
       }
 
       let html = "";
-      let cur = null;
-      state.history.forEach(h => {
-        if (h.cycle !== cur) {
-          cur = h.cycle;
-          html += `<div class="cycle-label">Cycle #${cur}</div>`;
+      let currentCycle = null;
+
+      state.history.forEach((entry, index) => {
+        if (entry.cycle !== currentCycle) {
+          currentCycle = entry.cycle;
+          html += `<div class="cycle-label">Cycle #${currentCycle}</div>`;
         }
-        const dateStr = h.date ? formatDate(h.date + "T00:00:00") : "";
+
+        const note = entry.advancedForHoliday && entry.holidayDate
+          ? `<span class="history-note">Executed early because ${escapeHtml(formatDate(entry.holidayDate))} is ${escapeHtml(entry.holidayName || "a holiday")}.</span>`
+          : "";
+
         html += `<div class="history-item">
-          <span class="date-round">${dateStr} &middot; R${h.round}</span>
-          <span class="names">${h.assigned[0]} & ${h.assigned[1]}</span>
+          <div class="history-text">
+            <span class="date-round">${escapeHtml(formatDate(entry.date))} &middot; R${entry.round}</span>
+            <span class="names">${escapeHtml(entry.assigned[0] || "?")} & ${escapeHtml(entry.assigned[1] || "?")}</span>
+            ${note}
+          </div>
+          <button class="icon-btn" onclick="deleteHistoryItem(${index})" aria-label="Delete history item">x</button>
         </div>`;
       });
-      container.innerHTML = html;
-    }
 
-    // --- Utility ---
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-      }
+      container.innerHTML = html;
     }
   </script>
 </body>

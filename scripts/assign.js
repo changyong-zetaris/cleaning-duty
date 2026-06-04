@@ -1,14 +1,14 @@
 // Cleaning Duty Auto-Assignment Script
-// Runs via GitHub Actions every Monday at 11:00 AM
+// Runs via GitHub Actions on Monday and Thursday
 // Reads/writes Firestore, sends Teams webhook notification
 
 const FIREBASE_PROJECT = process.env.FIREBASE_PROJECT;
 const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY;
 const TEAMS_WEBHOOK_URL = process.env.TEAMS_WEBHOOK_URL;
+const GITHUB_EVENT_NAME = process.env.GITHUB_EVENT_NAME;
 
+const MELBOURNE_TIMEZONE = "Australia/Melbourne";
 const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${FIREBASE_PROJECT}/databases/(default)/documents`;
-
-// --- Firestore REST API ---
 
 async function readDoc(path) {
   const url = `${FIRESTORE_BASE}/${path}?key=${FIREBASE_API_KEY}`;
@@ -35,8 +35,6 @@ async function writeDoc(path, data) {
   return true;
 }
 
-// --- Firestore format converters ---
-
 function fromFirestore(fields) {
   if (!fields) return null;
   const result = {};
@@ -48,7 +46,7 @@ function fromFirestore(fields) {
 
 function fromValue(v) {
   if (v.stringValue !== undefined) return v.stringValue;
-  if (v.integerValue !== undefined) return parseInt(v.integerValue);
+  if (v.integerValue !== undefined) return parseInt(v.integerValue, 10);
   if (v.doubleValue !== undefined) return v.doubleValue;
   if (v.booleanValue !== undefined) return v.booleanValue;
   if (v.nullValue !== undefined) return null;
@@ -77,19 +75,248 @@ function toValue(v) {
   return { stringValue: String(v) };
 }
 
-// --- Shuffle ---
-
 function shuffle(arr) {
-  for (let i = arr.length - 1; i > 0; i--) {
+  const copy = [...arr];
+  for (let i = copy.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+    [copy[i], copy[j]] = [copy[j], copy[i]];
   }
-  return arr;
+  return copy;
 }
 
-// --- Teams notification ---
+function unique(items) {
+  return [...new Set(items)];
+}
 
-async function sendTeamsNotification(pick1, pick2, cycle, round, dateStr) {
+function getMelbourneDateString() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: MELBOURNE_TIMEZONE,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+function parseDateString(dateString) {
+  const [year, month, day] = dateString.split("-").map(Number);
+  return { year, month, day };
+}
+
+function addDays(dateString, days) {
+  const { year, month, day } = parseDateString(dateString);
+  const utcDate = new Date(Date.UTC(year, month - 1, day));
+  utcDate.setUTCDate(utcDate.getUTCDate() + days);
+  return `${utcDate.getUTCFullYear()}-${String(utcDate.getUTCMonth() + 1).padStart(2, "0")}-${String(utcDate.getUTCDate()).padStart(2, "0")}`;
+}
+
+function getDayOfWeek(dateString) {
+  const { year, month, day } = parseDateString(dateString);
+  return new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+}
+
+function normalizeMembers(members) {
+  if (!Array.isArray(members)) return [];
+  return members
+    .map((member) => {
+      if (typeof member === "string") {
+        const name = member.trim();
+        return name ? { name, email: "" } : null;
+      }
+
+      const name = String(member?.name || "").trim();
+      if (!name) return null;
+      return {
+        ...member,
+        name,
+        email: typeof member?.email === "string" ? member.email : "",
+      };
+    })
+    .filter(Boolean)
+    .filter((member, index, arr) => arr.findIndex((entry) => entry.name === member.name) === index);
+}
+
+function normalizeHolidayOverrides(holidayOverrides) {
+  const additions = Array.isArray(holidayOverrides?.additions)
+    ? holidayOverrides.additions
+        .map((holiday) => ({
+          date: String(holiday?.date || ""),
+          name: String(holiday?.name || "").trim(),
+        }))
+        .filter((holiday) => /^\d{4}-\d{2}-\d{2}$/.test(holiday.date) && holiday.name)
+        .filter((holiday, index, arr) => arr.findIndex((entry) => entry.date === holiday.date) === index)
+    : [];
+
+  const exclusions = Array.isArray(holidayOverrides?.exclusions)
+    ? unique(
+        holidayOverrides.exclusions
+          .map((date) => String(date || "").trim())
+          .filter((date) => /^\d{4}-\d{2}-\d{2}$/.test(date))
+      )
+    : [];
+
+  return { additions, exclusions };
+}
+
+function normalizeHistory(history) {
+  if (!Array.isArray(history)) return [];
+  return history.map((entry, index) => ({
+    ...entry,
+    id: entry?.id || `legacy-${index}-${entry?.date || "unknown"}`,
+    assigned: Array.isArray(entry?.assigned) ? entry.assigned.filter(Boolean) : [],
+    date: entry?.date || "",
+    scheduledFor: entry?.scheduledFor || entry?.date || "",
+    advancedForHoliday: Boolean(entry?.advancedForHoliday),
+    holidayName: entry?.holidayName || "",
+    holidayDate: entry?.holidayDate || "",
+    cycle: Number(entry?.cycle || 0),
+    round: Number(entry?.round || 0),
+  }));
+}
+
+function reconcileStateWithMembers(state, memberNames) {
+  const history = normalizeHistory(state?.history);
+  const cycle = Number(state?.cycle || 0);
+  const currentCycleAssigned = new Set(
+    history
+      .filter((entry) => entry.cycle === cycle)
+      .flatMap((entry) => entry.assigned)
+      .filter((name) => memberNames.includes(name))
+  );
+
+  const remaining = unique(
+    Array.isArray(state?.remaining)
+      ? state.remaining.filter((name) => memberNames.includes(name))
+      : []
+  ).filter((name) => !currentCycleAssigned.has(name));
+
+  const missing = memberNames.filter((name) => !currentCycleAssigned.has(name) && !remaining.includes(name));
+
+  return {
+    cycle,
+    history,
+    remaining: [...remaining, ...shuffle(missing)],
+  };
+}
+
+async function fetchMelbournePublicHolidays(years, holidayOverrides) {
+  const overrides = normalizeHolidayOverrides(holidayOverrides);
+  const responses = await Promise.all(
+    unique(years).map(async (year) => {
+      const url = `https://date.nager.at/api/v3/PublicHolidays/${year}/AU`;
+      try {
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.warn(`Holiday API unavailable for ${year}: ${res.status}`);
+          return [];
+        }
+
+        const holidays = await res.json();
+        return holidays
+          .filter((holiday) => holiday.counties === null || holiday.counties.includes("AU-VIC"))
+          .map((holiday) => ({
+            date: holiday.date,
+            name: holiday.localName || holiday.name,
+          }));
+      } catch (error) {
+        console.warn(`Failed to fetch holiday data for ${year}:`, error.message);
+        return [];
+      }
+    })
+  );
+
+  const holidayMap = new Map();
+
+  responses.flat().forEach((holiday) => {
+    if (overrides.exclusions.includes(holiday.date)) return;
+    holidayMap.set(holiday.date, { ...holiday });
+  });
+
+  overrides.additions.forEach((holiday) => {
+    holidayMap.set(holiday.date, { ...holiday });
+  });
+
+  return holidayMap;
+}
+
+function getRunContext(today, holidayMap) {
+  if (GITHUB_EVENT_NAME === "workflow_dispatch") {
+    return {
+      shouldRun: true,
+      date: today,
+      scheduledFor: today,
+      advancedForHoliday: false,
+      holidayName: "",
+      holidayDate: "",
+      reason: "Manual workflow dispatch",
+    };
+  }
+
+  const dayOfWeek = getDayOfWeek(today);
+
+  if (dayOfWeek === 1) {
+    if (holidayMap.has(today)) {
+      const holiday = holidayMap.get(today);
+      return {
+        shouldRun: false,
+        reason: `Skipping: today (${today}) is a public holiday - ${holiday.name}`,
+      };
+    }
+
+    return {
+      shouldRun: true,
+      date: today,
+      scheduledFor: today,
+      advancedForHoliday: false,
+      holidayName: "",
+      holidayDate: "",
+      reason: "Regular Monday run",
+    };
+  }
+
+  if (dayOfWeek === 4) {
+    if (holidayMap.has(today)) {
+      const holiday = holidayMap.get(today);
+      return {
+        shouldRun: false,
+        reason: `Skipping: today (${today}) is a public holiday - ${holiday.name}`,
+      };
+    }
+
+    const nextMonday = addDays(today, 4);
+    const mondayHoliday = holidayMap.get(nextMonday);
+    if (!mondayHoliday) {
+      return {
+        shouldRun: false,
+        reason: `Skipping: next Monday (${nextMonday}) is not a holiday, so the regular Monday run will handle it.`,
+      };
+    }
+
+    return {
+      shouldRun: true,
+      date: today,
+      scheduledFor: nextMonday,
+      advancedForHoliday: true,
+      holidayName: mondayHoliday.name,
+      holidayDate: nextMonday,
+      reason: `Running early because next Monday (${nextMonday}) is ${mondayHoliday.name}`,
+    };
+  }
+
+  return {
+    shouldRun: false,
+    reason: `Skipping: today (${today}) is not a scheduled run day.`,
+  };
+}
+
+async function sendTeamsNotification(pick1, pick2, cycle, round, runContext) {
+  const note = runContext.advancedForHoliday
+    ? `Drawn early on ${runContext.date} because ${runContext.holidayDate} is ${runContext.holidayName}.`
+    : "Auto-assigned on the regular schedule.";
+
+  const cycleLine = runContext.advancedForHoliday
+    ? `Cycle #${cycle} - Round ${round} (Scheduled for ${runContext.scheduledFor})`
+    : `Cycle #${cycle} - Round ${round} (Auto-assigned)`;
+
   const card = {
     type: "message",
     attachments: [{
@@ -101,12 +328,13 @@ async function sendTeamsNotification(pick1, pick2, cycle, round, dateStr) {
         version: "1.4",
         body: [
           { type: "TextBlock", size: "Large", weight: "Bolder", text: "Cleaning Roulette Result" },
-          { type: "TextBlock", text: dateStr, spacing: "Small" },
+          { type: "TextBlock", text: runContext.date, spacing: "Small" },
           {
             type: "ColumnSet",
             columns: [
               {
-                type: "Column", width: "stretch",
+                type: "Column",
+                width: "stretch",
                 items: [
                   { type: "TextBlock", text: "Victim #1", weight: "Bolder", color: "Attention" },
                   { type: "TextBlock", text: pick1, size: "Large", weight: "Bolder" },
@@ -114,7 +342,8 @@ async function sendTeamsNotification(pick1, pick2, cycle, round, dateStr) {
                 ],
               },
               {
-                type: "Column", width: "stretch",
+                type: "Column",
+                width: "stretch",
                 items: [
                   { type: "TextBlock", text: "Victim #2", weight: "Bolder", color: "Attention" },
                   { type: "TextBlock", text: pick2, size: "Large", weight: "Bolder" },
@@ -123,7 +352,8 @@ async function sendTeamsNotification(pick1, pick2, cycle, round, dateStr) {
               },
             ],
           },
-          { type: "TextBlock", text: `Cycle #${cycle} - Round ${round} (Auto-assigned)`, isSubtle: true, spacing: "Medium" },
+          { type: "TextBlock", text: cycleLine, isSubtle: true, spacing: "Medium" },
+          { type: "TextBlock", text: note, wrap: true, spacing: "Small" },
         ],
       },
     }],
@@ -140,93 +370,77 @@ async function sendTeamsNotification(pick1, pick2, cycle, round, dateStr) {
   }
 }
 
-// --- Melbourne public holiday check ---
-
-async function isMelbournePublicHoliday() {
-  // Get today's date in Melbourne timezone
-  const melbourneDate = new Date().toLocaleDateString("en-CA", { timeZone: "Australia/Melbourne" });
-  const year = melbourneDate.split("-")[0];
-
-  const url = `https://date.nager.at/api/v3/PublicHolidays/${year}/AU`;
-  const res = await fetch(url);
-  if (!res.ok) {
-    console.warn("Holiday API unavailable, proceeding with assignment");
-    return false;
-  }
-
-  const holidays = await res.json();
-  // Include national holidays (counties === null) and Victoria holidays
-  const isHoliday = holidays.some(
-    (h) => h.date === melbourneDate && (h.counties === null || h.counties.includes("AU-VIC"))
-  );
-
-  if (isHoliday) {
-    const match = holidays.find(
-      (h) => h.date === melbourneDate && (h.counties === null || h.counties.includes("AU-VIC"))
-    );
-    console.log(`Skipping: today (${melbourneDate}) is a public holiday — ${match.localName}`);
-  }
-
-  return isHoliday;
+function createHistoryId() {
+  if (globalThis.crypto?.randomUUID) return globalThis.crypto.randomUUID();
+  return `history-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
-// --- Main ---
-
 async function main() {
-  // Skip assignment on Melbourne public holidays
-  if (await isMelbournePublicHoliday()) {
-    return;
-  }
+  const today = getMelbourneDateString();
 
-  // Read config (members list)
   const config = await readDoc("cleaning/config");
   if (!config || !config.members) {
     console.error("Config not found or missing members");
     process.exit(1);
   }
 
-  const memberNames = config.members.map((m) => m.name);
+  const members = normalizeMembers(config.members);
+  const memberNames = members.map((member) => member.name);
+  if (memberNames.length < 2) {
+    console.error("Need at least two members to run assignment");
+    process.exit(1);
+  }
 
-  // Read current state
+  const holidayMap = await fetchMelbournePublicHolidays(
+    [Number(today.slice(0, 4)), Number(addDays(today, 4).slice(0, 4))],
+    config.holidayOverrides
+  );
+  const runContext = getRunContext(today, holidayMap);
+
+  if (!runContext.shouldRun) {
+    console.log(runContext.reason);
+    return;
+  }
+
   let state = await readDoc("cleaning/state");
   if (!state) {
     state = { remaining: [], cycle: 0, history: [] };
   }
 
-  // Start new cycle if needed
+  state = reconcileStateWithMembers(state, memberNames);
+
   if (!state.remaining || state.remaining.length < 2) {
     state.cycle = (state.cycle || 0) + 1;
-    state.remaining = shuffle([...memberNames]);
+    state.remaining = shuffle(memberNames);
   }
 
-  // Pick 2 random people
   const idx1 = Math.floor(Math.random() * state.remaining.length);
   const pick1 = state.remaining.splice(idx1, 1)[0];
   const idx2 = Math.floor(Math.random() * state.remaining.length);
   const pick2 = state.remaining.splice(idx2, 1)[0];
+  const roundNum = state.history.filter((entry) => entry.cycle === state.cycle).length + 1;
 
-  const roundNum = (memberNames.length - state.remaining.length) / 2;
-  const today = new Date().toLocaleDateString("en-CA", { timeZone: "Australia/Melbourne" });
-
-  if (!state.history) state.history = [];
   state.history.push({
+    id: createHistoryId(),
     cycle: state.cycle,
     round: roundNum,
     assigned: [pick1, pick2],
-    date: today,
+    date: runContext.date,
+    scheduledFor: runContext.scheduledFor,
+    advancedForHoliday: runContext.advancedForHoliday,
+    holidayName: runContext.holidayName,
+    holidayDate: runContext.holidayDate,
   });
 
-  // Save to Firestore
   const saved = await writeDoc("cleaning/state", state);
   if (!saved) {
     console.error("Failed to save state");
     process.exit(1);
   }
 
-  // Notify Teams
-  await sendTeamsNotification(pick1, pick2, state.cycle, roundNum, today);
-
+  await sendTeamsNotification(pick1, pick2, state.cycle, roundNum, runContext);
   console.log(`Assigned: ${pick1} & ${pick2} (Cycle #${state.cycle}, Round ${roundNum})`);
+  console.log(runContext.reason);
 }
 
 main().catch((err) => {
