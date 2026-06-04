@@ -5,40 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cleaning Duty Roulette</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=IBM+Plex+Mono:wght@400;600&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap');
 
     :root {
-      --bg: #090812;
-      --bg-glow: radial-gradient(circle at top, rgba(76, 201, 240, 0.16), transparent 32%);
-      --panel: #171729;
-      --panel-2: #10101d;
-      --panel-3: #1e1f35;
-      --line: #2d2f4b;
-      --line-strong: #4f5280;
-      --text: #eef0ff;
-      --muted: #8d90b3;
-      --soft: #5f6288;
-      --pink: #f72585;
-      --pink-2: #ff4fa1;
-      --cyan: #4cc9f0;
-      --violet: #7209b7;
-      --gold: #ffd166;
-      --danger: #ff6b6b;
-      --success: #60d394;
-      --shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+      --bg: #0d1117;
+      --bg-soft: #161b22;
+      --paper: rgba(22, 27, 34, 0.82);
+      --paper-strong: rgba(33, 38, 45, 0.92);
+      --line: rgba(240, 246, 252, 0.09);
+      --line-strong: rgba(240, 246, 252, 0.16);
+      --ink: #e6edf3;
+      --ink-soft: #b6c2cf;
+      --muted: #8b97a3;
+      --accent: #58a6ff;
+      --accent-strong: #388bfd;
+      --accent-2: #a371f7;
+      --accent-soft: rgba(88, 166, 255, 0.12);
+      --warning: rgba(210, 153, 34, 0.14);
+      --warning-line: rgba(210, 153, 34, 0.32);
+      --danger: #f85149;
+      --danger-soft: rgba(248, 81, 73, 0.12);
+      --success: #3fb950;
+      --red-bean: #ff7b72;
+      --red-bean-soft: rgba(255, 123, 114, 0.14);
+      --yellow-bean: #e3b341;
+      --yellow-bean-soft: rgba(227, 179, 65, 0.14);
+      --shadow: 0 24px 64px rgba(1, 4, 9, 0.5);
+      --shadow-soft: 0 12px 28px rgba(1, 4, 9, 0.36);
+      --radius-xl: 22px;
+      --radius-lg: 16px;
+      --radius-md: 12px;
+      --radius-sm: 9px;
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
-      font-family: 'Poppins', sans-serif;
-      background: var(--bg);
-      background-image: var(--bg-glow);
-      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(88, 166, 255, 0.14), transparent 26%),
+        radial-gradient(circle at top right, rgba(163, 113, 247, 0.12), transparent 24%),
+        linear-gradient(180deg, #0d1117 0%, #111923 100%);
+      color: var(--ink);
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      padding: 28px 16px 40px;
+      padding: 34px 18px 48px;
       overflow-x: hidden;
     }
 
@@ -46,105 +58,164 @@
       content: '';
       position: fixed;
       inset: 0;
-      background:
-        linear-gradient(135deg, rgba(247, 37, 133, 0.09), transparent 28%),
-        linear-gradient(315deg, rgba(76, 201, 240, 0.08), transparent 32%);
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 34px 34px;
+      opacity: 0.4;
       pointer-events: none;
     }
 
     .container {
-      max-width: 860px;
+      max-width: 1120px;
       width: 100%;
       position: relative;
       z-index: 1;
     }
 
     .header {
-      text-align: center;
-      margin-bottom: 26px;
+      text-align: left;
+      margin-bottom: 24px;
+      padding: 18px 20px 0;
+      display: grid;
+      gap: 10px;
     }
 
+    .header::after {
+      content: '';
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(88, 166, 255, 0.22), rgba(139, 148, 158, 0.08), transparent 72%);
+      margin-top: 2px;
+    }
+
+    .header .kicker,
     .header .date {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.8rem;
-      color: var(--muted);
-      margin-bottom: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
       letter-spacing: 1.2px;
       text-transform: uppercase;
+      color: var(--muted);
     }
 
     .header h1 {
-      font-size: clamp(2.2rem, 7vw, 3.3rem);
+      font-size: clamp(2.4rem, 5vw, 3.2rem);
+      line-height: 1.05;
       font-weight: 800;
-      line-height: 1;
-      background: linear-gradient(135deg, #ff5db1, #7209b7 45%, #4cc9f0 85%);
-      background-size: 250% 250%;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: gradientShift 5s ease infinite;
+      color: var(--ink);
+      letter-spacing: -0.04em;
     }
 
     .header .subtitle {
-      font-size: 0.9rem;
-      color: var(--soft);
-      margin-top: 8px;
-      letter-spacing: 0.4px;
-    }
-
-    @keyframes gradientShift {
-      0%, 100% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
+      max-width: 760px;
+      font-size: 1.02rem;
+      line-height: 1.72;
+      color: var(--ink-soft);
     }
 
     .notice-strip {
-      background: linear-gradient(135deg, rgba(114, 9, 183, 0.22), rgba(76, 201, 240, 0.12));
-      border: 1px solid rgba(76, 201, 240, 0.25);
-      border-radius: 18px;
-      padding: 16px 18px;
-      margin-bottom: 18px;
-      box-shadow: var(--shadow);
+      background: linear-gradient(135deg, rgba(33, 38, 45, 0.9), rgba(22, 27, 34, 0.92));
+      border: 1px solid var(--warning-line);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      margin-bottom: 22px;
+      box-shadow: var(--shadow-soft);
     }
 
     .notice-strip.hidden { display: none; }
 
     .notice-strip .eyebrow {
       display: inline-block;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.68rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
       letter-spacing: 1.4px;
       text-transform: uppercase;
-      color: var(--cyan);
+      color: #d29922;
       margin-bottom: 8px;
     }
 
     .notice-strip .message {
-      font-size: 0.96rem;
-      line-height: 1.5;
-      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.7;
+      color: var(--ink);
     }
 
-    .layout {
+    .workspace-nav {
+      display: inline-flex;
+      gap: 8px;
+      padding: 6px;
+      margin-bottom: 22px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .workspace-tab-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.86rem;
+      font-weight: 700;
+      padding: 11px 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    }
+
+    .workspace-tab-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .workspace-tab-btn.active {
+      background: rgba(88, 166, 255, 0.12);
+      color: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(88, 166, 255, 0.12);
+    }
+
+    .page-panels {
       display: grid;
-      grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
-      gap: 18px;
-      align-items: start;
+    }
+
+    .page-panel {
+      display: none;
+      animation: fadeUp 0.24s ease both;
+    }
+
+    .page-panel.active {
+      display: block;
     }
 
     .stack {
       display: grid;
-      gap: 16px;
+      gap: 20px;
+    }
+
+    .stack > * {
+      animation: fadeUp 0.5s ease both;
+    }
+
+    .stack > *:nth-child(2) { animation-delay: 0.05s; }
+    .stack > *:nth-child(3) { animation-delay: 0.1s; }
+    .stack > *:nth-child(4) { animation-delay: 0.15s; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .card,
     .slot-machine {
-      background: linear-gradient(145deg, rgba(23, 23, 41, 0.98), rgba(11, 11, 23, 0.98));
-      border: 1px solid var(--line);
-      border-radius: 24px;
+      background: var(--paper);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-xl);
       box-shadow: var(--shadow);
     }
 
     .slot-machine {
-      padding: 24px 22px;
+      padding: 28px;
       position: relative;
       overflow: hidden;
     }
@@ -152,138 +223,282 @@
     .slot-machine::before {
       content: '';
       position: absolute;
-      inset: -1px;
-      border-radius: 24px;
-      padding: 1px;
-      background: linear-gradient(120deg, rgba(247, 37, 133, 0.7), rgba(114, 9, 183, 0.45), rgba(76, 201, 240, 0.65));
-      -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-      -webkit-mask-composite: xor;
-      mask-composite: exclude;
+      inset: 0;
+      background:
+        radial-gradient(circle at top right, rgba(88, 166, 255, 0.12), transparent 28%),
+        radial-gradient(circle at bottom left, rgba(163, 113, 247, 0.1), transparent 24%);
       pointer-events: none;
     }
 
-    .cycle-info {
-      text-align: center;
-      font-size: 0.92rem;
-      color: var(--muted);
+    .hero-top {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
       margin-bottom: 18px;
-      line-height: 1.5;
     }
 
-    .cycle-info strong { color: var(--pink-2); }
+    .hero-top .eyebrow {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .hero-title {
+      font-size: clamp(1.7rem, 2.6vw, 2.15rem);
+      line-height: 1.15;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 8px;
+    }
+
+    .hero-copy {
+      max-width: 460px;
+      font-size: 1rem;
+      line-height: 1.75;
+      color: var(--ink-soft);
+    }
+
+    .hero-badge {
+      padding: 9px 12px;
+      border-radius: 999px;
+      background: rgba(88, 166, 255, 0.12);
+      border: 1px solid rgba(88, 166, 255, 0.18);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.7rem;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      white-space: nowrap;
+    }
+
+    .cycle-info {
+      position: relative;
+      z-index: 1;
+      font-size: 1rem;
+      color: var(--ink-soft);
+      margin-bottom: 16px;
+      line-height: 1.75;
+    }
+
+    .cycle-info strong { color: var(--accent); }
+
+    .pre-run-note {
+      display: none;
+      position: relative;
+      z-index: 1;
+      background: var(--warning);
+      border: 1px solid var(--warning-line);
+      border-radius: var(--radius-md);
+      padding: 13px 14px;
+      margin-bottom: 16px;
+      color: #d2a86b;
+      font-size: 0.92rem;
+      line-height: 1.65;
+    }
+
+    .pre-run-note.visible { display: block; }
 
     .slot-windows {
-      display: flex;
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 16px;
-      justify-content: center;
       margin-bottom: 22px;
     }
 
     .slot-window {
-      width: 100%;
       min-width: 0;
-      height: 114px;
-      background: linear-gradient(180deg, rgba(9, 8, 18, 0.98), rgba(15, 16, 34, 0.98));
+      min-height: 188px;
+      background: linear-gradient(180deg, rgba(33, 38, 45, 0.62), rgba(13, 17, 23, 0.62));
       border-radius: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      overflow: hidden;
+      border: 1px solid var(--line);
       position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      padding: 18px 12px 12px;
+      text-align: center;
+      gap: 14px;
+      padding: 28px 18px 24px;
+      overflow: hidden;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    .slot-window::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--line-strong);
+    }
+
+    .slot-window.slot-red::before {
+      background: linear-gradient(90deg, transparent, var(--red-bean), transparent);
+    }
+
+    .slot-window.slot-yellow::before {
+      background: linear-gradient(90deg, transparent, var(--yellow-bean), transparent);
     }
 
     .slot-window .label {
-      position: absolute;
-      top: 8px;
-      left: 10px;
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.56rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.66rem;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--soft);
-    }
-
-    .slot-window .name {
-      font-size: 1.24rem;
-      font-weight: 800;
-      text-align: center;
-      color: var(--cyan);
-      transition: all 0.3s;
-    }
-
-    .slot-window .name.spinning {
-      animation: slotSpin 0.1s linear infinite;
-      color: #666;
-      filter: blur(2px);
-    }
-
-    .slot-window .name.winner {
-      color: var(--pink-2);
-      text-shadow: 0 0 20px rgba(247, 37, 133, 0.45);
-      animation: winPulse 0.5s ease;
-    }
-
-    .slot-window .task {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 0.62rem;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1.4px;
+      letter-spacing: 1.6px;
       color: var(--muted);
     }
 
+    .slot-window .name {
+      font-size: clamp(1.5rem, 3vw, 1.95rem);
+      font-weight: 800;
+      line-height: 1.12;
+      letter-spacing: -0.01em;
+      color: var(--ink);
+      transition: color 0.25s ease, transform 0.25s ease;
+      word-break: break-word;
+    }
+
+    .slot-window .name.spinning {
+      animation: slotSpin 0.12s linear infinite;
+      color: var(--muted);
+      filter: blur(1.5px);
+    }
+
+    .slot-window .name.winner {
+      color: var(--accent);
+      animation: winPulse 0.45s ease;
+    }
+
+    .slot-window.slot-red .name.winner { color: var(--red-bean); }
+    .slot-window.slot-yellow .name.winner { color: var(--yellow-bean); }
+
+    .slot-window .task {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px 5px 10px;
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.1px;
+      color: var(--ink-soft);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--line);
+    }
+
+    .slot-window .task-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+    }
+
+    .slot-window.slot-red .task {
+      color: var(--red-bean);
+      background: var(--red-bean-soft);
+      border-color: rgba(255, 123, 114, 0.3);
+    }
+
+    .slot-window.slot-red .task-dot { background: var(--red-bean); }
+
+    .slot-window.slot-yellow .task {
+      color: var(--yellow-bean);
+      background: var(--yellow-bean-soft);
+      border-color: rgba(227, 179, 65, 0.3);
+    }
+
+    .slot-window.slot-yellow .task-dot { background: var(--yellow-bean); }
+
     @keyframes slotSpin {
-      0% { transform: translateY(-20px); opacity: 0.3; }
+      0% { transform: translateY(-8px); opacity: 0.35; }
       50% { transform: translateY(0); opacity: 1; }
-      100% { transform: translateY(20px); opacity: 0.3; }
+      100% { transform: translateY(8px); opacity: 0.35; }
     }
 
     @keyframes winPulse {
-      0% { transform: scale(1.4); }
-      50% { transform: scale(0.9); }
+      0% { transform: scale(1.06); }
+      50% { transform: scale(0.98); }
       100% { transform: scale(1); }
     }
-
-    .pre-run-note {
-      display: none;
-      background: rgba(255, 209, 102, 0.1);
-      border: 1px solid rgba(255, 209, 102, 0.24);
-      border-radius: 16px;
-      padding: 12px 14px;
-      margin-bottom: 16px;
-      color: #ffe8a6;
-      font-size: 0.88rem;
-      line-height: 1.5;
-    }
-
-    .pre-run-note.visible { display: block; }
 
     .pull-btn,
     .mini-btn,
     .icon-btn,
     .danger-btn {
       border: none;
-      border-radius: 14px;
-      font-family: 'Poppins', sans-serif;
+      border-radius: var(--radius-md);
+      font-family: 'Inter', sans-serif;
       cursor: pointer;
-      transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+      transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, opacity 0.18s ease;
     }
 
     .pull-btn {
-      display: block;
+      position: relative;
+      z-index: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       width: 100%;
-      padding: 15px;
-      font-size: 1.02rem;
+      min-height: 56px;
+      padding: 16px 20px;
+      font-size: 0.95rem;
       font-weight: 800;
-      color: #fff;
-      background: linear-gradient(135deg, #f72585, #b5179e);
+      letter-spacing: 1.4px;
       text-transform: uppercase;
-      letter-spacing: 2px;
-      box-shadow: 0 10px 28px rgba(247, 37, 133, 0.3);
+      color: #ffffff;
+      background: linear-gradient(135deg, #1f6feb, #388bfd);
+      box-shadow: 0 12px 24px rgba(31, 111, 235, 0.22);
+    }
+
+    .mini-btn {
+      padding: 0 18px;
+      min-height: 48px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      white-space: nowrap;
+      color: #ffffff;
+      background: linear-gradient(135deg, #1f6feb, #2f81f7);
+      box-shadow: 0 8px 18px rgba(31, 111, 235, 0.18);
+    }
+
+    .icon-btn {
+      width: 32px;
+      height: 32px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--muted);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.9rem;
+      line-height: 1;
+    }
+
+    .danger-btn {
+      min-height: 42px;
+      padding: 10px 18px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: var(--danger);
+      background: var(--danger-soft);
+      border: 1px solid rgba(248, 81, 73, 0.24);
+      text-transform: uppercase;
+      letter-spacing: 1.1px;
+    }
+
+    .danger-btn:hover {
+      background: rgba(248, 81, 73, 0.18);
     }
 
     .pull-btn:hover,
@@ -304,161 +519,269 @@
     }
 
     .card {
-      padding: 18px;
+      padding: 22px;
+    }
+
+    .management-card {
+      overflow: hidden;
+    }
+
+    .management-shell {
+      display: grid;
+      gap: 18px;
+    }
+
+    .management-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .management-title {
+      font-size: 1.5rem;
+      line-height: 1.2;
+      font-weight: 800;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+
+    .management-copy {
+      color: var(--ink-soft);
+      font-size: 0.94rem;
+      line-height: 1.7;
+      max-width: 280px;
+    }
+
+    .management-tabs {
+      display: inline-flex;
+      gap: 8px;
+      padding: 6px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      width: fit-content;
+    }
+
+    .tab-btn {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+    }
+
+    .tab-btn:hover {
+      transform: translateY(-1px);
+    }
+
+    .tab-btn.active {
+      background: rgba(88, 166, 255, 0.12);
+      color: var(--accent);
+      box-shadow: inset 0 0 0 1px rgba(88, 166, 255, 0.12);
+    }
+
+    .tab-panel {
+      display: none;
+      gap: 0;
+    }
+
+    .tab-panel.active {
+      display: grid;
+      animation: fadeUp 0.24s ease both;
+    }
+
+    .tab-panel-body {
+      max-height: 620px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .tab-panel-body::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .tab-panel-body::-webkit-scrollbar-thumb {
+      background: rgba(88, 166, 255, 0.24);
+      border-radius: 999px;
     }
 
     .card h2 {
-      font-size: 0.8rem;
-      font-weight: 700;
-      margin-bottom: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+      font-weight: 600;
+      margin-bottom: 12px;
       color: var(--muted);
       text-transform: uppercase;
-      letter-spacing: 1.6px;
+      letter-spacing: 1.5px;
     }
 
     .card .section-copy {
-      color: var(--soft);
-      font-size: 0.84rem;
-      line-height: 1.5;
-      margin-bottom: 12px;
+      color: var(--ink-soft);
+      font-size: 0.96rem;
+      line-height: 1.7;
+      margin-bottom: 16px;
     }
 
-    .manager-list {
+    .form-row,
+    .double-row,
+    .triple-row {
       display: grid;
       gap: 10px;
+      margin-bottom: 16px;
     }
 
     .form-row {
-      display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
-      gap: 10px;
-      margin-bottom: 14px;
     }
 
     .double-row {
-      display: grid;
-      grid-template-columns: 144px minmax(0, 1fr) auto;
-      gap: 10px;
-      margin-bottom: 14px;
+      grid-template-columns: 150px minmax(0, 1fr) auto;
+    }
+
+    .triple-row {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto;
     }
 
     .text-input,
     .date-input {
       width: 100%;
-      border: 1px solid var(--line);
-      background: rgba(8, 8, 18, 0.72);
-      color: var(--text);
-      padding: 11px 12px;
-      border-radius: 12px;
+      min-height: 50px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(13, 17, 23, 0.72);
+      color: var(--ink);
+      padding: 12px 14px;
+      border-radius: 14px;
       font: inherit;
+      font-size: 0.95rem;
       outline: none;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .text-input::placeholder,
+    .date-input::placeholder {
+      color: rgba(139, 148, 158, 0.68);
     }
 
     .text-input:focus,
     .date-input:focus {
-      border-color: rgba(76, 201, 240, 0.55);
-      box-shadow: 0 0 0 3px rgba(76, 201, 240, 0.12);
-    }
-
-    .mini-btn {
-      padding: 0 16px;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #fff;
-      background: linear-gradient(135deg, rgba(76, 201, 240, 0.95), rgba(67, 97, 238, 0.95));
-      min-height: 44px;
-      white-space: nowrap;
-    }
-
-    .danger-btn {
-      width: 100%;
-      padding: 11px 16px;
-      font-size: 0.74rem;
-      font-weight: 700;
-      color: var(--danger);
-      background: transparent;
-      border: 1px solid rgba(255, 107, 107, 0.24);
-      text-transform: uppercase;
-      letter-spacing: 1px;
+      border-color: rgba(88, 166, 255, 0.32);
+      box-shadow: 0 0 0 4px rgba(88, 166, 255, 0.12);
     }
 
     .members {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(122px, 1fr));
-      gap: 10px;
+      grid-template-columns: repeat(auto-fill, minmax(214px, 1fr));
+      gap: 12px;
     }
 
     .member {
       position: relative;
-      min-height: 76px;
-      border-radius: 16px;
-      padding: 14px 12px 12px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      transition: all 0.35s ease;
-      border: 1px solid transparent;
-      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 122px;
+      border-radius: var(--radius-lg);
+      padding: 15px 16px 16px;
+      transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+      border: 1px solid var(--line);
+      background: rgba(13, 17, 23, 0.46);
     }
 
-    .member::after {
-      content: '';
-      position: absolute;
-      inset: auto 0 0 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.42), transparent);
-      opacity: 0.18;
+    .member:hover {
+      transform: translateY(-2px);
+      border-color: var(--line-strong);
+    }
+
+    .member-top {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .member-avatar {
+      flex: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 38px;
+      height: 38px;
+      border-radius: 11px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #f0f6fc;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .member-avatar.avatar-c0 { background: linear-gradient(135deg, #1f6feb, #388bfd); border-color: transparent; }
+    .member-avatar.avatar-c1 { background: linear-gradient(135deg, #8957e5, #a371f7); border-color: transparent; }
+    .member-avatar.avatar-c2 { background: linear-gradient(135deg, #1f883d, #3fb950); border-color: transparent; }
+    .member-avatar.avatar-c3 { background: linear-gradient(135deg, #c2541b, #f0883e); border-color: transparent; }
+    .member-avatar.avatar-c4 { background: linear-gradient(135deg, #9e6a03, #e3b341); color: #0d1117; border-color: transparent; }
+    .member-avatar.avatar-c5 { background: linear-gradient(135deg, #bf4b8a, #db61a2); border-color: transparent; }
+
+    .member-status {
+      margin-left: auto;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.58rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.9px;
+      padding: 4px 9px;
+      border-radius: 999px;
+      white-space: nowrap;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--line);
+    }
+
+    .member-status.on-duty {
+      color: var(--accent);
+      background: var(--accent-soft);
+      border-color: rgba(88, 166, 255, 0.26);
     }
 
     .member .member-name {
       display: block;
-      padding-right: 22px;
+      font-size: 0.98rem;
+      font-weight: 700;
+      line-height: 1.35;
+      color: var(--ink);
       word-break: break-word;
     }
 
-    .member.available {
-      background: linear-gradient(180deg, rgba(26, 26, 46, 1), rgba(16, 16, 29, 1));
-      color: #cfd2ef;
-      border-color: #2a2a4a;
+    .member .member-email {
+      display: block;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      line-height: 1.5;
+      color: var(--muted);
+      word-break: break-word;
     }
 
     .member.selected {
-      background: linear-gradient(135deg, rgba(247, 37, 133, 0.95), rgba(181, 23, 158, 0.92));
-      color: #fff;
-      border-color: rgba(255, 255, 255, 0.12);
-      transform: scale(1.02);
-      box-shadow: 0 0 18px rgba(247, 37, 133, 0.28);
-      animation: selectedGlow 1.5s ease infinite;
+      border-color: rgba(88, 166, 255, 0.3);
+      background: linear-gradient(180deg, rgba(31, 111, 235, 0.12), rgba(13, 17, 23, 0.46));
     }
 
     .member.done {
-      background: rgba(17, 17, 17, 0.9);
-      color: #5c5e73;
-      border-color: #1a1a1a;
+      opacity: 0.6;
+    }
+
+    .member.done .member-name {
       text-decoration: line-through;
-    }
-
-    @keyframes selectedGlow {
-      0%, 100% { box-shadow: 0 0 18px rgba(247, 37, 133, 0.25); }
-      50% { box-shadow: 0 0 26px rgba(247, 37, 133, 0.48); }
-    }
-
-    .icon-btn {
-      width: 28px;
-      height: 28px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(255, 255, 255, 0.06);
-      color: var(--muted);
-      font-size: 0.86rem;
-      line-height: 1;
-      border: 1px solid rgba(255, 255, 255, 0.06);
+      text-decoration-thickness: 1px;
+      color: var(--ink-soft);
     }
 
     .member-remove {
-      position: absolute;
-      top: 8px;
-      right: 8px;
+      flex: none;
     }
 
     .pill-list {
@@ -470,11 +793,11 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 10px;
-      padding: 12px 12px 12px 14px;
-      border-radius: 16px;
+      gap: 12px;
+      padding: 14px 14px 14px 16px;
+      border-radius: 18px;
       border: 1px solid rgba(255, 255, 255, 0.08);
-      background: linear-gradient(180deg, rgba(20, 20, 34, 0.95), rgba(13, 13, 24, 0.95));
+      background: rgba(22, 27, 34, 0.72);
     }
 
     .pill-info {
@@ -482,34 +805,34 @@
     }
 
     .pill-date {
-      font-family: 'IBM Plex Mono', monospace;
-      color: var(--cyan);
-      font-size: 0.78rem;
-      margin-bottom: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--accent);
+      font-size: 0.76rem;
+      margin-bottom: 5px;
     }
 
     .pill-name {
-      font-weight: 600;
-      color: var(--text);
-      font-size: 0.9rem;
-      line-height: 1.4;
+      font-weight: 700;
+      color: var(--ink);
+      font-size: 0.92rem;
+      line-height: 1.45;
       word-break: break-word;
     }
 
     .pill-meta {
-      margin-top: 5px;
-      font-size: 0.74rem;
-      color: var(--soft);
+      margin-top: 6px;
+      font-size: 0.75rem;
+      color: var(--muted);
     }
 
     .history-item {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      gap: 12px;
-      padding: 11px 0;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-      font-size: 0.82rem;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.9rem;
     }
 
     .history-item:last-child { border-bottom: none; }
@@ -521,29 +844,30 @@
 
     .history-item .date-round {
       display: block;
-      color: var(--soft);
-      font-size: 0.72rem;
-      margin-bottom: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--muted);
+      font-size: 0.76rem;
+      margin-bottom: 6px;
     }
 
     .history-item .names {
       display: block;
-      font-weight: 600;
-      color: #d8dbfa;
-      line-height: 1.45;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.6;
       word-break: break-word;
     }
 
     .history-item.current .names {
-      color: var(--pink-2);
+      color: var(--accent);
     }
 
     .history-item .history-note {
       display: block;
-      margin-top: 6px;
-      font-size: 0.73rem;
-      color: #ffe08a;
-      line-height: 1.45;
+      margin-top: 7px;
+      font-size: 0.74rem;
+      color: #d29922;
+      line-height: 1.55;
     }
 
     .toggle-header {
@@ -558,92 +882,239 @@
       display: inline-block;
       transition: transform 0.2s;
       font-size: 0.62rem;
-      color: var(--soft);
+      color: var(--muted);
     }
 
     .toggle-header .arrow.open { transform: rotate(90deg); }
 
     .cycle-label {
-      font-family: 'IBM Plex Mono', monospace;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 0.72rem;
       font-weight: 600;
-      color: var(--violet);
-      padding: 10px 0 5px;
-      border-bottom: 1px solid rgba(114, 9, 183, 0.18);
-      margin-top: 6px;
+      color: var(--accent);
+      padding: 12px 0 6px;
+      border-bottom: 1px solid var(--line);
+      margin-top: 8px;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 1.2px;
     }
 
     .cycle-label:first-child { margin-top: 0; }
 
     .empty {
       text-align: center;
-      color: #555a7b;
-      padding: 16px 10px;
-      font-size: 0.85rem;
+      color: #6e7681;
+      padding: 20px 10px;
+      font-size: 0.88rem;
     }
 
     .helper {
-      font-size: 0.74rem;
-      color: var(--soft);
-      line-height: 1.45;
+      font-size: 0.76rem;
+      color: var(--muted);
+      line-height: 1.6;
+      margin-bottom: 12px;
     }
 
     .loading {
       text-align: center;
-      color: var(--muted);
-      padding: 60px 20px;
-      font-size: 0.95rem;
+      color: var(--ink-soft);
+      padding: 72px 20px;
+      font-size: 1rem;
     }
 
     .confetti-piece {
       position: fixed;
-      width: 8px;
-      height: 8px;
-      border-radius: 2px;
+      width: 7px;
+      height: 11px;
+      border-radius: 999px;
       pointer-events: none;
       z-index: 999;
       animation: confettiFall 1.5s ease-out forwards;
+      opacity: 0.95;
     }
 
     @keyframes confettiFall {
       0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+      100% { transform: translateY(100vh) rotate(420deg); opacity: 0; }
     }
 
-    @media (max-width: 860px) {
-      .layout {
-        grid-template-columns: 1fr;
+    @media (max-width: 920px) {
+      .tab-panel-body {
+        max-height: none;
+        overflow: visible;
+        padding-right: 0;
       }
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 720px) {
       body {
-        padding: 20px 12px 32px;
+        padding: 22px 12px 36px;
       }
 
+      .header {
+        margin-bottom: 22px;
+      }
+
+      .hero-top,
       .slot-windows {
+        grid-template-columns: 1fr;
+        display: grid;
+      }
+
+      .hero-top {
+        gap: 14px;
+      }
+
+      .hero-badge {
+        width: fit-content;
+      }
+
+      .management-header {
         flex-direction: column;
       }
 
-      .slot-window {
-        height: 98px;
+      .management-tabs {
+        width: 100%;
+        justify-content: space-between;
+      }
+
+      .workspace-nav {
+        width: 100%;
+        justify-content: space-between;
       }
 
       .form-row,
-      .double-row {
+      .double-row,
+      .triple-row {
         grid-template-columns: 1fr;
       }
+    }
+    /* --- Header brand --- */
+    .header {
+      display: block;
+    }
+
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .brand-mark {
+      flex: none;
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 15px;
+      color: #ffffff;
+      background: linear-gradient(135deg, #1f6feb, #388bfd 55%, #a371f7);
+      box-shadow: 0 12px 26px rgba(31, 111, 235, 0.34);
+    }
+
+    .header-text {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
+    .header-text h1 {
+      margin-top: 3px;
+    }
+
+    .date-chip {
+      flex: none;
+      align-self: flex-start;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 7px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--line);
+      white-space: nowrap;
+    }
+
+    /* --- History footer --- */
+    .history-footer {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* --- Holiday pills --- */
+    .pill {
+      position: relative;
+      padding-left: 18px;
+    }
+
+    .pill::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 14px;
+      bottom: 14px;
+      width: 3px;
+      border-radius: 999px;
+      background: var(--accent);
+      opacity: 0.55;
+    }
+
+    .pill-meta {
+      display: inline-block;
+      margin-top: 9px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.7px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--line);
+    }
+
+    /* --- Empty state --- */
+    .empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .empty::before {
+      content: '';
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1.5px dashed var(--line-strong);
+    }
+
+    .members .empty,
+    .pill-list .empty {
+      grid-column: 1 / -1;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="header">
-      <div class="date" id="todayDate"></div>
-      <h1>Cleaning Roulette</h1>
-      <div class="subtitle">Melbourne office cleaning picks, with holiday-aware scheduling.</div>
+      <div class="header-row">
+        <div class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 3.5l3.2 3.2-7.4 7.4-3.2-3.2z" />
+            <path d="M9.6 14.1l-4.3 4.3a2 2 0 1 0 2.9 2.9l4.3-4.3" />
+            <path d="M16.4 5.1l2.4 2.4" />
+          </svg>
+        </div>
+        <div class="header-text">
+          <div class="kicker">Melbourne Office Ops</div>
+          <h1>Cleaning Roulette</h1>
+        </div>
+        <div class="date-chip" id="todayDate"></div>
+      </div>
+      <div class="subtitle">Spin up fair weekly cleaning duties, track the rotation, and manage the roster and public holidays — all from one workspace.</div>
     </div>
 
     <div id="app"><div class="loading">Connecting to database...</div></div>
@@ -655,66 +1126,108 @@
       <div class="message" id="scheduleBannerMessage"></div>
     </div>
 
-    <div class="layout">
-      <div class="stack">
-        <div class="slot-machine">
-          <div class="cycle-info" id="cycleInfo"></div>
-          <div class="pre-run-note" id="preRunNote"></div>
+    <div class="workspace-nav" role="tablist" aria-label="Primary navigation">
+      <button class="workspace-tab-btn active" type="button" id="drawTabBtn" role="tab" aria-selected="true" onclick="switchMainTab('draw')">Draw</button>
+      <button class="workspace-tab-btn" type="button" id="historyTabBtn" role="tab" aria-selected="false" onclick="switchMainTab('history')">History</button>
+      <button class="workspace-tab-btn" type="button" id="manageTabBtn" role="tab" aria-selected="false" onclick="switchMainTab('manage')">Manage</button>
+    </div>
 
-          <div class="slot-windows">
-            <div class="slot-window">
-              <span class="label">Victim #1</span>
-              <span class="name" id="slot1">?</span>
-              <span class="task">Red Bean</span>
+    <div class="page-panels">
+      <section class="page-panel active" id="drawPage" role="tabpanel">
+        <div class="stack">
+          <div class="slot-machine">
+            <div class="hero-top">
+              <div>
+                <div class="eyebrow">This Round</div>
+                <div class="hero-title">Cleaning Assignment</div>
+                <div class="hero-copy">Run the draw manually when needed, while keeping the weekly schedule and holiday exceptions visible in one place.</div>
+              </div>
+              <div class="hero-badge">Auto + Manual</div>
             </div>
-            <div class="slot-window">
-              <span class="label">Victim #2</span>
-              <span class="name" id="slot2">?</span>
-              <span class="task">Yellow Bean</span>
+
+            <div class="cycle-info" id="cycleInfo"></div>
+            <div class="pre-run-note" id="preRunNote"></div>
+
+            <div class="slot-windows">
+              <div class="slot-window slot-red">
+                <span class="label">Victim #1</span>
+                <span class="name" id="slot1">?</span>
+                <span class="task"><span class="task-dot"></span>Red Bean</span>
+              </div>
+              <div class="slot-window slot-yellow">
+                <span class="label">Victim #2</span>
+                <span class="name" id="slot2">?</span>
+                <span class="task"><span class="task-dot"></span>Yellow Bean</span>
+              </div>
+            </div>
+
+            <button class="pull-btn" id="assignBtn" onclick="doAssign()">Run Roulette</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="page-panel" id="historyPage" role="tabpanel">
+        <div class="stack">
+          <div class="card">
+            <h2>Current Cycle</h2>
+            <div id="cycleHistory"><div class="empty">No assignments yet</div></div>
+          </div>
+
+          <div class="card">
+            <h2 class="toggle-header" onclick="toggleFull()">
+              <span class="arrow" id="arrow">&#9654;</span> Full History
+            </h2>
+            <div id="fullHistory" style="display:none;"></div>
+          </div>
+
+          <div class="history-footer">
+            <button class="danger-btn" onclick="doReset()">Reset all history</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="page-panel" id="managePage" role="tabpanel">
+        <div class="card management-card">
+          <div class="management-shell">
+            <div class="management-header">
+              <div>
+                <h2>Management</h2>
+                <div class="management-title">Roster & Calendar</div>
+                <div class="management-copy">Use this space to update candidates and public holidays without making the main workspace unnecessarily long.</div>
+              </div>
+              <div class="management-tabs" role="tablist" aria-label="Management sections">
+                <button class="tab-btn active" type="button" id="candidatesTabBtn" role="tab" aria-selected="true" onclick="switchAdminTab('candidates')">Candidates</button>
+                <button class="tab-btn" type="button" id="holidaysTabBtn" role="tab" aria-selected="false" onclick="switchAdminTab('holidays')">Public Holidays</button>
+              </div>
+            </div>
+
+            <div class="tab-panel active" id="candidatesPanel" role="tabpanel">
+              <div class="section-copy">Add or remove roulette candidates directly from the UI. Removing a candidate updates future rounds immediately.</div>
+              <div class="triple-row">
+                <input class="text-input" id="memberNameInput" type="text" placeholder="Candidate name" />
+                <input class="text-input" id="memberEmailInput" type="email" placeholder="Candidate email" />
+                <button class="mini-btn" type="button" id="addMemberBtn" onclick="addMember()">Add Candidate</button>
+              </div>
+              <div class="tab-panel-body">
+                <div class="members" id="membersGrid"></div>
+              </div>
+            </div>
+
+            <div class="tab-panel" id="holidaysPanel" role="tabpanel">
+              <div class="section-copy">Official Melbourne/Victoria holidays are shown here. You can hide one from scheduling or add your own office-specific holiday.</div>
+              <div class="double-row">
+                <input class="date-input" id="holidayDateInput" type="date" />
+                <input class="text-input" id="holidayNameInput" type="text" placeholder="Holiday name" />
+                <button class="mini-btn" type="button" id="addHolidayBtn" onclick="addHoliday()">Add Holiday</button>
+              </div>
+              <div class="helper" id="holidayHelper"></div>
+              <div class="tab-panel-body">
+                <div class="pill-list" id="holidaysList"></div>
+              </div>
             </div>
           </div>
-
-          <button class="pull-btn" id="assignBtn" onclick="doAssign()">Pull the Lever</button>
         </div>
-
-        <div class="card">
-          <h2>Current Cycle</h2>
-          <div id="cycleHistory"><div class="empty">No assignments yet</div></div>
-        </div>
-
-        <div class="card">
-          <h2 class="toggle-header" onclick="toggleFull()">
-            <span class="arrow" id="arrow">&#9654;</span> Full History
-          </h2>
-          <div id="fullHistory" style="display:none;"></div>
-        </div>
-
-        <button class="danger-btn" onclick="doReset()">Reset All</button>
-      </div>
-
-      <div class="stack">
-        <div class="card">
-          <h2>Candidates</h2>
-          <div class="section-copy">Add or remove roulette candidates directly from the UI. Removing a candidate updates future rounds immediately.</div>
-          <div class="form-row">
-            <input class="text-input" id="memberNameInput" type="text" placeholder="Add a candidate name" />
-            <button class="mini-btn" onclick="addMember()">Add Candidate</button>
-          </div>
-          <div class="members" id="membersGrid"></div>
-        </div>
-
-        <div class="card">
-          <h2>Public Holidays</h2>
-          <div class="section-copy">Official Melbourne/Victoria holidays are shown here. You can hide one from scheduling or add your own office-specific holiday.</div>
-          <div class="double-row">
-            <input class="date-input" id="holidayDateInput" type="date" />
-            <input class="text-input" id="holidayNameInput" type="text" placeholder="Holiday name" />
-            <button class="mini-btn" onclick="addHoliday()">Add Holiday</button>
-          </div>
-          <div class="helper" id="holidayHelper"></div>
-          <div class="pill-list" id="holidaysList"></div>
-        </div>
-      </div>
+      </section>
     </div>
   </template>
 
@@ -757,8 +1270,12 @@
     let isSpinning = false;
     let configLoaded = false;
     let stateLoaded = false;
+    let currentMainTab = "draw";
+    let currentAdminTab = "candidates";
     let holidayApiCache = new Map();
     let holidayHelperMessage = "Loading Melbourne public holidays...";
+    let isSavingConfig = false;
+    let isSavingState = false;
 
     function showDate() {
       const el = document.getElementById("todayDate");
@@ -801,6 +1318,13 @@
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#39;");
+    }
+
+    function getInitials(name) {
+      const parts = String(name).trim().split(/\s+/).filter(Boolean);
+      if (parts.length === 0) return "?";
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     }
 
     function addDays(dateString, days) {
@@ -1134,8 +1658,61 @@
       render(reconcileStateWithMembers(currentState, MEMBER_NAMES));
     }
 
+    function renderMainTabs() {
+      const isDraw = currentMainTab === "draw";
+      const isHistory = currentMainTab === "history";
+      const isManage = currentMainTab === "manage";
+      const drawBtn = document.getElementById("drawTabBtn");
+      const historyBtn = document.getElementById("historyTabBtn");
+      const manageBtn = document.getElementById("manageTabBtn");
+      const drawPage = document.getElementById("drawPage");
+      const historyPage = document.getElementById("historyPage");
+      const managePage = document.getElementById("managePage");
+
+      if (!drawBtn || !historyBtn || !manageBtn || !drawPage || !historyPage || !managePage) return;
+
+      drawBtn.classList.toggle("active", isDraw);
+      historyBtn.classList.toggle("active", isHistory);
+      manageBtn.classList.toggle("active", isManage);
+      drawBtn.setAttribute("aria-selected", String(isDraw));
+      historyBtn.setAttribute("aria-selected", String(isHistory));
+      manageBtn.setAttribute("aria-selected", String(isManage));
+      drawPage.classList.toggle("active", isDraw);
+      historyPage.classList.toggle("active", isHistory);
+      managePage.classList.toggle("active", isManage);
+    }
+
+    function renderAdminTabs() {
+      const isCandidates = currentAdminTab === "candidates";
+      const candidatesBtn = document.getElementById("candidatesTabBtn");
+      const holidaysBtn = document.getElementById("holidaysTabBtn");
+      const candidatesPanel = document.getElementById("candidatesPanel");
+      const holidaysPanel = document.getElementById("holidaysPanel");
+
+      if (!candidatesBtn || !holidaysBtn || !candidatesPanel || !holidaysPanel) return;
+
+      candidatesBtn.classList.toggle("active", isCandidates);
+      holidaysBtn.classList.toggle("active", !isCandidates);
+      candidatesBtn.setAttribute("aria-selected", String(isCandidates));
+      holidaysBtn.setAttribute("aria-selected", String(!isCandidates));
+      candidatesPanel.classList.toggle("active", isCandidates);
+      holidaysPanel.classList.toggle("active", !isCandidates);
+    }
+
     async function init() {
       ensureAppShell();
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter") return;
+        if (event.target?.id === "memberNameInput" || event.target?.id === "memberEmailInput") {
+          event.preventDefault();
+          window.addMember();
+        }
+        if (event.target?.id === "holidayNameInput" || event.target?.id === "holidayDateInput") {
+          event.preventDefault();
+          window.addHoliday();
+        }
+      });
 
       onSnapshot(configRef, async (snapshot) => {
         currentConfig = normalizeConfig(snapshot.exists() ? snapshot.data() : DEFAULT_CONFIG);
@@ -1209,8 +1786,8 @@
     }
 
     function launchConfetti() {
-      const colors = ["#f72585", "#7209b7", "#3a0ca3", "#4361ee", "#4cc9f0", "#ffd166"];
-      for (let i = 0; i < 40; i++) {
+      const colors = ["#58a6ff", "#79c0ff", "#a371f7", "#3fb950", "#d29922", "#8b949e"];
+      for (let i = 0; i < 24; i++) {
         const piece = document.createElement("div");
         piece.className = "confetti-piece";
         piece.style.left = `${Math.random() * 100}vw`;
@@ -1224,15 +1801,37 @@
     }
 
     async function saveConfig(nextConfig) {
-      await setDoc(configRef, normalizeConfig(nextConfig));
+      isSavingConfig = true;
+      try {
+        await setDoc(configRef, normalizeConfig(nextConfig));
+      } finally {
+        isSavingConfig = false;
+      }
     }
 
     async function saveState(nextState) {
-      await setDoc(stateRef, {
-        cycle: Number(nextState.cycle || 0),
-        remaining: Array.isArray(nextState.remaining) ? nextState.remaining : [],
-        history: normalizeHistory(nextState.history)
-      });
+      isSavingState = true;
+      try {
+        await setDoc(stateRef, {
+          cycle: Number(nextState.cycle || 0),
+          remaining: Array.isArray(nextState.remaining) ? nextState.remaining : [],
+          history: normalizeHistory(nextState.history)
+        });
+      } finally {
+        isSavingState = false;
+      }
+    }
+
+    function setButtonBusy(buttonId, isBusy, busyLabel) {
+      const button = document.getElementById(buttonId);
+      if (!button) return;
+
+      if (!button.dataset.defaultLabel) {
+        button.dataset.defaultLabel = button.textContent;
+      }
+
+      button.disabled = isBusy;
+      button.textContent = isBusy ? busyLabel : button.dataset.defaultLabel;
     }
 
     window.doAssign = async function () {
@@ -1293,20 +1892,58 @@
       if (fullOpen) renderFullHistory(reconcileStateWithMembers(currentState, MEMBER_NAMES));
     };
 
+    window.switchMainTab = function (tab) {
+      currentMainTab = tab === "history" || tab === "manage" ? tab : "draw";
+      renderMainTabs();
+    };
+
+    window.switchAdminTab = function (tab) {
+      currentAdminTab = tab === "holidays" ? "holidays" : "candidates";
+      renderAdminTabs();
+    };
+
     window.addMember = async function () {
-      const input = document.getElementById("memberNameInput");
-      const name = input.value.trim();
+      if (isSavingConfig || isSavingState) return;
+      const nameInput = document.getElementById("memberNameInput");
+      const emailInput = document.getElementById("memberEmailInput");
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim().toLowerCase();
       if (!name) return;
+      if (!email) {
+        alert("Enter the candidate email too.");
+        emailInput.focus();
+        return;
+      }
       if (MEMBER_NAMES.includes(name)) {
         alert("That candidate already exists.");
         return;
       }
+      if (MEMBERS.some((member) => member.email?.toLowerCase() === email)) {
+        alert("That email already exists.");
+        return;
+      }
 
-      const nextMembers = [...MEMBERS, { name, email: "" }];
+      const nextMembers = [...MEMBERS, { name, email }];
       const nextState = reconcileStateWithMembers(currentState, nextMembers.map((member) => member.name));
-      await saveConfig({ ...currentConfig, members: nextMembers });
-      await saveState(nextState);
-      input.value = "";
+
+      setButtonBusy("addMemberBtn", true, "Adding...");
+      nameInput.disabled = true;
+      emailInput.disabled = true;
+
+      try {
+        await saveConfig({ ...currentConfig, members: nextMembers });
+        await saveState(nextState);
+        nameInput.value = "";
+        emailInput.value = "";
+      } catch (error) {
+        console.error("Failed to add candidate:", error);
+        alert("Failed to add candidate. Check Firestore permissions or your browser console.");
+      } finally {
+        nameInput.disabled = false;
+        emailInput.disabled = false;
+        setButtonBusy("addMemberBtn", false, "Adding...");
+        nameInput.focus();
+      }
     };
 
     window.removeMember = async function (name) {
@@ -1318,6 +1955,7 @@
     };
 
     window.addHoliday = async function () {
+      if (isSavingConfig) return;
       const dateInput = document.getElementById("holidayDateInput");
       const nameInput = document.getElementById("holidayNameInput");
       const date = dateInput.value;
@@ -1328,23 +1966,36 @@
         return;
       }
 
-      const overrides = normalizeHolidayOverrides(currentConfig.holidayOverrides);
-      const nextAdditions = [
-        ...overrides.additions.filter((holiday) => holiday.date !== date),
-        { date, name }
-      ].sort((a, b) => a.date.localeCompare(b.date));
+      setButtonBusy("addHolidayBtn", true, "Adding...");
+      dateInput.disabled = true;
+      nameInput.disabled = true;
 
-      const nextExclusions = overrides.exclusions.filter((excludedDate) => excludedDate !== date);
-      await saveConfig({
-        ...currentConfig,
-        holidayOverrides: {
-          additions: nextAdditions,
-          exclusions: nextExclusions
-        }
-      });
+      try {
+        const overrides = normalizeHolidayOverrides(currentConfig.holidayOverrides);
+        const nextAdditions = [
+          ...overrides.additions.filter((holiday) => holiday.date !== date),
+          { date, name }
+        ].sort((a, b) => a.date.localeCompare(b.date));
 
-      dateInput.value = "";
-      nameInput.value = "";
+        const nextExclusions = overrides.exclusions.filter((excludedDate) => excludedDate !== date);
+        await saveConfig({
+          ...currentConfig,
+          holidayOverrides: {
+            additions: nextAdditions,
+            exclusions: nextExclusions
+          }
+        });
+
+        dateInput.value = "";
+        nameInput.value = "";
+      } catch (error) {
+        console.error("Failed to add holiday:", error);
+        alert("Failed to add holiday. Check Firestore permissions or your browser console.");
+      } finally {
+        dateInput.disabled = false;
+        nameInput.disabled = false;
+        setButtonBusy("addHolidayBtn", false, "Adding...");
+      }
     };
 
     window.removeHoliday = async function (date) {
@@ -1379,6 +2030,8 @@
 
       renderScheduleBanner(state, holidays);
       renderPreRunNote(current);
+      renderMainTabs();
+      renderAdminTabs();
 
       const slot1 = document.getElementById("slot1");
       const slot2 = document.getElementById("slot2");
@@ -1394,21 +2047,40 @@
         slot2.className = "name";
       }
 
-      document.getElementById("membersGrid").innerHTML = MEMBER_NAMES.length === 0
+      document.getElementById("membersGrid").innerHTML = MEMBERS.length === 0
         ? '<div class="empty">No candidates yet</div>'
-        : MEMBER_NAMES.map((name) => {
+        : MEMBERS.map((member, memberIndex) => {
+            const name = member.name;
             let cls = "member ";
-            if (currentAssigned.includes(name)) cls += "selected";
-            else if (remainingSet.has(name)) cls += "available";
-            else if (state.cycle > 0) cls += "done";
-            else cls += "available";
+            let statusCls = "in-rotation";
+            let statusLabel = "In rotation";
+            if (currentAssigned.includes(name)) {
+              cls += "selected";
+              statusCls = "on-duty";
+              statusLabel = "On duty";
+            } else if (remainingSet.has(name)) {
+              cls += "available";
+            } else if (state.cycle > 0) {
+              cls += "done";
+              statusCls = "done";
+              statusLabel = "Done";
+            } else {
+              cls += "available";
+            }
 
             const encodedName = encodeURIComponent(name);
             const safeName = escapeHtml(name);
+            const safeEmail = escapeHtml(member.email || "");
+            const initials = escapeHtml(getInitials(name));
 
             return `<div class="${cls}">
-              <button class="icon-btn member-remove" onclick="removeMember(decodeURIComponent('${encodedName}'))" aria-label="Remove ${safeName}">x</button>
+              <div class="member-top">
+                <span class="member-avatar avatar-c${memberIndex % 6}" aria-hidden="true">${initials}</span>
+                <span class="member-status ${statusCls}">${statusLabel}</span>
+                <button class="icon-btn member-remove" onclick="removeMember(decodeURIComponent('${encodedName}'))" aria-label="Remove ${safeName}">&times;</button>
+              </div>
               <span class="member-name">${safeName}</span>
+              ${safeEmail ? `<span class="member-email">${safeEmail}</span>` : ""}
             </div>`;
           }).join("");
 
@@ -1419,7 +2091,8 @@
         info.innerHTML = "Pull the lever to find this round's lucky cleaners!";
       } else {
         const left = state.remaining.length;
-        info.innerHTML = `Cycle <strong>#${state.cycle}</strong> &middot; ${left < 2 ? "Current cycle is almost done. The next pull starts a new cycle." : `${Math.floor(left / 2)} rounds remaining`}`;
+        const roundsLeft = Math.floor(left / 2);
+        info.innerHTML = `Cycle <strong>#${state.cycle}</strong> &middot; ${left < 2 ? "Current cycle is almost done — the next draw starts a new cycle." : `${roundsLeft} round${roundsLeft === 1 ? "" : "s"} remaining`}`;
       }
 
       const cycleItems = state.history
