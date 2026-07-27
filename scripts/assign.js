@@ -168,6 +168,7 @@ function normalizeHistory(history) {
     advancedForHoliday: Boolean(entry?.advancedForHoliday),
     holidayName: entry?.holidayName || "",
     holidayDate: entry?.holidayDate || "",
+    carriedOver: Array.isArray(entry?.carriedOver) ? entry.carriedOver.filter(Boolean) : [],
     cycle: Number(entry?.cycle || 0),
     round: Number(entry?.round || 0),
   }));
@@ -190,12 +191,57 @@ function reconcileStateWithMembers(state, memberNames) {
   ).filter((name) => !currentCycleAssigned.has(name));
 
   const missing = memberNames.filter((name) => !currentCycleAssigned.has(name) && !remaining.includes(name));
+  const nextRemaining = [...remaining, ...shuffle(missing)];
+
+  // Carried-over candidates are members whose duty is still pending from an
+  // earlier cycle. They only stay pending while they are still in the rotation.
+  const carryOver = unique(
+    Array.isArray(state?.carryOver) ? state.carryOver.filter((name) => memberNames.includes(name)) : []
+  ).filter((name) => nextRemaining.includes(name));
 
   return {
     cycle,
     history,
-    remaining: [...remaining, ...shuffle(missing)],
+    remaining: nextRemaining,
+    carryOver,
   };
+}
+
+/**
+ * Draws the members for one round.
+ *
+ * A cycle ends when it can no longer fill a full round. Members the cycle never
+ * reached are carried over instead of being dropped, and carried-over members are
+ * always drawn first in the new cycle, so nobody is reset out of the rotation
+ * before they have actually done their duty.
+ */
+function drawPicks(state, memberNames, pickCount) {
+  let cycle = Number(state?.cycle || 0);
+  let remaining = [...(state?.remaining || [])];
+  let carryOver = [...(state?.carryOver || [])];
+
+  if (remaining.length < pickCount) {
+    carryOver = unique([...carryOver, ...remaining]);
+    cycle += 1;
+    remaining = shuffle(memberNames);
+  }
+
+  const picks = [];
+  const carriedPicks = [];
+
+  while (picks.length < pickCount && carryOver.length > 0) {
+    const name = carryOver.shift();
+    picks.push(name);
+    carriedPicks.push(name);
+    remaining = remaining.filter((entry) => entry !== name);
+  }
+
+  while (picks.length < pickCount && remaining.length > 0) {
+    const index = Math.floor(Math.random() * remaining.length);
+    picks.push(remaining.splice(index, 1)[0]);
+  }
+
+  return { cycle, remaining, carryOver, picks, carriedPicks };
 }
 
 async function fetchMelbournePublicHolidays(years, holidayOverrides) {
@@ -308,10 +354,16 @@ function getRunContext(today, holidayMap) {
   };
 }
 
-async function sendTeamsNotification(pick1, pick2, cycle, round, runContext) {
-  const note = runContext.advancedForHoliday
+async function sendTeamsNotification(pick1, pick2, cycle, round, runContext, carriedPicks = []) {
+  const scheduleNote = runContext.advancedForHoliday
     ? `Drawn early on ${runContext.date} because ${runContext.holidayDate} is ${runContext.holidayName}.`
     : "Auto-assigned on the regular schedule.";
+
+  const carryNote = carriedPicks.length > 0
+    ? ` ${carriedPicks.join(", ")} carried over from the previous cycle and ${carriedPicks.length === 1 ? "was" : "were"} drawn first.`
+    : "";
+
+  const note = `${scheduleNote}${carryNote}`;
 
   const cycleLine = runContext.advancedForHoliday
     ? `Cycle #${cycle} - Round ${round} (Scheduled for ${runContext.scheduledFor})`
@@ -404,21 +456,18 @@ async function main() {
 
   let state = await readDoc("cleaning/state");
   if (!state) {
-    state = { remaining: [], cycle: 0, history: [] };
+    state = { remaining: [], cycle: 0, history: [], carryOver: [] };
   }
 
   state = reconcileStateWithMembers(state, memberNames);
 
-  if (!state.remaining || state.remaining.length < 2) {
-    state.cycle = (state.cycle || 0) + 1;
-    state.remaining = shuffle(memberNames);
-  }
+  const draw = drawPicks(state, memberNames, 2);
+  const [pick1, pick2] = draw.picks;
+  const roundNum = state.history.filter((entry) => entry.cycle === draw.cycle).length + 1;
 
-  const idx1 = Math.floor(Math.random() * state.remaining.length);
-  const pick1 = state.remaining.splice(idx1, 1)[0];
-  const idx2 = Math.floor(Math.random() * state.remaining.length);
-  const pick2 = state.remaining.splice(idx2, 1)[0];
-  const roundNum = state.history.filter((entry) => entry.cycle === state.cycle).length + 1;
+  state.cycle = draw.cycle;
+  state.remaining = draw.remaining;
+  state.carryOver = draw.carryOver;
 
   state.history.push({
     id: createHistoryId(),
@@ -430,6 +479,7 @@ async function main() {
     advancedForHoliday: runContext.advancedForHoliday,
     holidayName: runContext.holidayName,
     holidayDate: runContext.holidayDate,
+    carriedOver: draw.carriedPicks,
   });
 
   const saved = await writeDoc("cleaning/state", state);
@@ -438,7 +488,10 @@ async function main() {
     process.exit(1);
   }
 
-  await sendTeamsNotification(pick1, pick2, state.cycle, roundNum, runContext);
+  await sendTeamsNotification(pick1, pick2, state.cycle, roundNum, runContext, draw.carriedPicks);
+  if (draw.carriedPicks.length > 0) {
+    console.log(`Carried over from the previous cycle: ${draw.carriedPicks.join(", ")}`);
+  }
   console.log(`Assigned: ${pick1} & ${pick2} (Cycle #${state.cycle}, Round ${roundNum})`);
   console.log(runContext.reason);
 }

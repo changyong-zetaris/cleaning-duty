@@ -747,6 +747,12 @@
       border-color: rgba(88, 166, 255, 0.26);
     }
 
+    .member-status.carry-over {
+      color: var(--yellow-bin);
+      background: var(--warning);
+      border-color: var(--warning-line);
+    }
+
     .member .member-name {
       display: block;
       font-size: 0.98rem;
@@ -768,6 +774,11 @@
     .member.selected {
       border-color: rgba(88, 166, 255, 0.3);
       background: linear-gradient(180deg, rgba(31, 111, 235, 0.12), rgba(13, 17, 23, 0.46));
+    }
+
+    .member.carry-over {
+      border-color: var(--warning-line);
+      background: linear-gradient(180deg, rgba(210, 153, 34, 0.1), rgba(13, 17, 23, 0.46));
     }
 
     .member.done {
@@ -1251,7 +1262,7 @@
     const stateRef = doc(db, "cleaning", "state");
     const configRef = doc(db, "cleaning", "config");
 
-    const DEFAULT_STATE = { remaining: [], cycle: 0, history: [] };
+    const DEFAULT_STATE = { remaining: [], cycle: 0, history: [], carryOver: [] };
     const DEFAULT_CONFIG = {
       members: [],
       holidayOverrides: { additions: [], exclusions: [] }
@@ -1414,6 +1425,7 @@
         advancedForHoliday: Boolean(entry?.advancedForHoliday),
         holidayName: entry?.holidayName || "",
         holidayDate: entry?.holidayDate || "",
+        carriedOver: Array.isArray(entry?.carriedOver) ? entry.carriedOver.filter(Boolean) : [],
         round: Number(entry?.round || 0),
         cycle: Number(entry?.cycle || 0)
       }));
@@ -1449,11 +1461,21 @@
       ).filter((name) => !currentCycleAssigned.has(name));
 
       const missingRemaining = memberNames.filter((name) => !currentCycleAssigned.has(name) && !dedupedRemaining.includes(name));
+      const remaining = [...dedupedRemaining, ...shuffle(missingRemaining)];
+
+      // Carried-over candidates are members whose duty is still pending from an
+      // earlier cycle. They only stay pending while they are still in the rotation.
+      const carryOver = uniqueNames(
+        Array.isArray(state?.carryOver)
+          ? state.carryOver.filter((name) => memberNames.includes(name))
+          : []
+      ).filter((name) => remaining.includes(name));
 
       return {
         cycle,
         history,
-        remaining: [...dedupedRemaining, ...shuffle(missingRemaining)]
+        remaining,
+        carryOver
       };
     }
 
@@ -1466,6 +1488,7 @@
       let cycle = 0;
       let round = 0;
       let assignedInCycle = new Set();
+      let carryOver = [];
       const nextHistory = [];
 
       normalizedHistory.forEach((entry) => {
@@ -1477,6 +1500,8 @@
           availableCount < Math.max(relevantAssigned.length, 2);
 
         if (startsNewCycle) {
+          // Whoever the ending cycle did not reach still owes a turn.
+          carryOver = cycle === 0 ? [] : memberNames.filter((name) => !assignedInCycle.has(name));
           cycle += 1;
           round = 0;
           assignedInCycle = new Set();
@@ -1484,6 +1509,7 @@
 
         round += 1;
         relevantAssigned.forEach((name) => assignedInCycle.add(name));
+        carryOver = carryOver.filter((name) => !assignedInCycle.has(name));
 
         nextHistory.push({
           ...entry,
@@ -1496,8 +1522,55 @@
       return {
         cycle,
         history: nextHistory,
-        remaining: memberNames.filter((name) => !assignedInCycle.has(name))
+        remaining: memberNames.filter((name) => !assignedInCycle.has(name)),
+        carryOver
       };
+    }
+
+    /**
+     * Draws the members for one round.
+     *
+     * A cycle ends when it can no longer fill a full round. Members the cycle never
+     * reached are carried over instead of being dropped, and carried-over members are
+     * always drawn first in the new cycle, so nobody is reset out of the rotation
+     * before they have actually done their duty.
+     *
+     * @param {{cycle: number, remaining: string[], carryOver: string[]}} state Reconciled state.
+     * @param {string[]} memberNames All candidates currently in the rotation.
+     * @param {number} pickCount How many members this round needs.
+     * @returns {{cycle: number, remaining: string[], carryOver: string[], picks: string[], carriedPicks: string[]}}
+     * @example
+     * // remaining has one member left, so the cycle rolls over and that member goes first
+     * drawPicks({ cycle: 3, remaining: ["Dana"], carryOver: [] }, ["Ann", "Bob", "Dana"], 2);
+     * // => { cycle: 4, picks: ["Dana", "Bob"], carriedPicks: ["Dana"], ... }
+     */
+    function drawPicks(state, memberNames, pickCount) {
+      let cycle = Number(state?.cycle || 0);
+      let remaining = [...(state?.remaining || [])];
+      let carryOver = [...(state?.carryOver || [])];
+
+      if (remaining.length < pickCount) {
+        carryOver = uniqueNames([...carryOver, ...remaining]);
+        cycle += 1;
+        remaining = shuffle(memberNames);
+      }
+
+      const picks = [];
+      const carriedPicks = [];
+
+      while (picks.length < pickCount && carryOver.length > 0) {
+        const name = carryOver.shift();
+        picks.push(name);
+        carriedPicks.push(name);
+        remaining = remaining.filter((entry) => entry !== name);
+      }
+
+      while (picks.length < pickCount && remaining.length > 0) {
+        const index = Math.floor(Math.random() * remaining.length);
+        picks.push(remaining.splice(index, 1)[0]);
+      }
+
+      return { cycle, remaining, carryOver, picks, carriedPicks };
     }
 
     async function fetchApiHolidaysForYears(years) {
@@ -1815,6 +1888,7 @@
         await setDoc(stateRef, {
           cycle: Number(nextState.cycle || 0),
           remaining: Array.isArray(nextState.remaining) ? nextState.remaining : [],
+          carryOver: Array.isArray(nextState.carryOver) ? nextState.carryOver : [],
           history: normalizeHistory(nextState.history)
         });
       } finally {
@@ -1843,32 +1917,28 @@
         return;
       }
 
-      if (state.remaining.length < 2) {
-        state.cycle = (state.cycle || 0) + 1;
-        state.remaining = shuffle(MEMBER_NAMES);
-      }
-
-      const idx1 = Math.floor(Math.random() * state.remaining.length);
-      const pick1 = state.remaining.splice(idx1, 1)[0];
-      const idx2 = Math.floor(Math.random() * state.remaining.length);
-      const pick2 = state.remaining.splice(idx2, 1)[0];
+      const draw = drawPicks(state, MEMBER_NAMES, 2);
+      const [pick1, pick2] = draw.picks;
       const today = getMelbourneToday();
-      const roundNum = getCurrentCycleCount(state.history, state.cycle) + 1;
+      const roundNum = getCurrentCycleCount(state.history, draw.cycle) + 1;
 
       const nextState = {
-        ...state,
+        cycle: draw.cycle,
+        remaining: draw.remaining,
+        carryOver: draw.carryOver,
         history: [
           ...state.history,
           {
             id: createHistoryId(),
-            cycle: state.cycle,
+            cycle: draw.cycle,
             round: roundNum,
             assigned: [pick1, pick2],
             date: today,
             scheduledFor: today,
             advancedForHoliday: false,
             holidayName: "",
-            holidayDate: ""
+            holidayDate: "",
+            carriedOver: draw.carriedPicks
           }
         ]
       };
@@ -2022,11 +2092,19 @@
       await saveState(rebuildStateFromHistory(nextHistory, MEMBER_NAMES));
     };
 
+    function buildCarryOverNote(entry) {
+      const carried = Array.isArray(entry?.carriedOver) ? entry.carriedOver.filter(Boolean) : [];
+      if (carried.length === 0) return "";
+      const names = escapeHtml(carried.join(", "));
+      return `<span class="history-note">${names} carried over from the previous cycle and ${carried.length === 1 ? "was" : "were"} drawn first.</span>`;
+    }
+
     function render(state) {
       const holidays = getEffectiveHolidays(currentConfig, getCachedApiHolidayEntries());
       const current = state.history.length > 0 ? state.history[state.history.length - 1] : null;
       const currentAssigned = current ? current.assigned : [];
       const remainingSet = new Set(state.remaining);
+      const carryOverSet = new Set(state.carryOver || []);
 
       renderScheduleBanner(state, holidays);
       renderPreRunNote(current);
@@ -2058,6 +2136,10 @@
               cls += "selected";
               statusCls = "on-duty";
               statusLabel = "On duty";
+            } else if (carryOverSet.has(name)) {
+              cls += "available carry-over";
+              statusCls = "carry-over";
+              statusLabel = "Up next";
             } else if (remainingSet.has(name)) {
               cls += "available";
             } else if (state.cycle > 0) {
@@ -2092,7 +2174,14 @@
       } else {
         const left = state.remaining.length;
         const roundsLeft = Math.floor(left / 2);
-        info.innerHTML = `Cycle <strong>#${state.cycle}</strong> &middot; ${left < 2 ? "Current cycle is almost done — the next draw starts a new cycle." : `${roundsLeft} round${roundsLeft === 1 ? "" : "s"} remaining`}`;
+        const carried = state.carryOver || [];
+        const carryNote = carried.length > 0
+          ? ` &middot; <strong>${escapeHtml(carried.join(", "))}</strong> ${carried.length === 1 ? "is" : "are"} up next from the previous cycle`
+          : "";
+        const cycleNote = left < 2
+          ? `Current cycle is almost done — the next draw starts a new cycle${left === 1 ? " and carries over the last candidate" : ""}.`
+          : `${roundsLeft} round${roundsLeft === 1 ? "" : "s"} remaining`;
+        info.innerHTML = `Cycle <strong>#${state.cycle}</strong> &middot; ${cycleNote}${carryNote}`;
       }
 
       const cycleItems = state.history
@@ -2113,6 +2202,7 @@
               <span class="date-round">${escapeHtml(formatDate(entry.date))} &middot; R${entry.round}</span>
               <span class="names">${escapeHtml(entry.assigned[0] || "?")} & ${escapeHtml(entry.assigned[1] || "?")}</span>
               ${note}
+              ${buildCarryOverNote(entry)}
             </div>
             <button class="icon-btn" onclick="deleteHistoryItem(${entry.historyIndex})" aria-label="Delete history item">x</button>
           </div>`;
@@ -2167,6 +2257,7 @@
             <span class="date-round">${escapeHtml(formatDate(entry.date))} &middot; R${entry.round}</span>
             <span class="names">${escapeHtml(entry.assigned[0] || "?")} & ${escapeHtml(entry.assigned[1] || "?")}</span>
             ${note}
+            ${buildCarryOverNote(entry)}
           </div>
           <button class="icon-btn" onclick="deleteHistoryItem(${index})" aria-label="Delete history item">x</button>
         </div>`;
